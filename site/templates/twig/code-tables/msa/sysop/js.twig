@@ -1,0 +1,55 @@
+$(function() {
+
+	$("#code-edit-form").validate({
+		errorClass: "is-invalid",
+		validClass: "is-valid",
+		errorPlacement: function(error, element) {
+			error.insertAfter(element).addClass('invalid-feedback');
+		},
+		rules: {
+			code: {
+				required: true,
+				maxlength: {{ max_length_code }}
+			},
+			system:	'required',
+			web_validate: 'required',
+			web_force: 'required',
+			validate: 'required',
+			file_name: 'required',
+			force: 'required',
+			adv_search: 'required',
+			field_type: 'required'
+		},
+		messages: {
+			code: "Please check the Code value (Max Length: {{ max_length_code }})",
+		},
+		submitHandler: function(form) {
+			form.submit();
+		}
+	});
+
+	$("#code-edit-form #field_type").show(function() {
+		if ($('#field_type').val() == 'C') {
+			$('#before_dec').val('0');
+			$('#after_dec').val('0');
+			$('#before_dec').prop("readonly", true);
+			$('#after_dec').prop("readonly", true);
+		} else if ($('#field_type').val() == 'N'){
+			$('#before_dec').prop("readonly", false);
+			$('#after_dec').prop("readonly", false);
+		}
+	});
+
+	$("#code-edit-form #field_type").change(function() {
+		if ($('#field_type').val() == 'C') {
+			$('#before_dec').val('0');
+			$('#after_dec').val('0');
+			$('#before_dec').prop("readonly", true);
+			$('#after_dec').prop("readonly", true);
+		} else if ($('#field_type').val() == 'N'){
+			$('#before_dec').prop("readonly", false);
+			$('#after_dec').prop("readonly", false);
+		}
+	});
+
+})
