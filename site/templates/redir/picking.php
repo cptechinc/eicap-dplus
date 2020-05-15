@@ -185,20 +185,7 @@
 			$whsesession = WhsesessionQuery::create()->findOneBySessionid($sessionID);
 			$data = array("DBNAME=$dplusdb", 'ACCEPTITEM', "ORDERNBR=$whsesession->ordernbr", "LINENBR=$item->linenbr", "ITEMID=$item->itemnbr");
 
-			if ($whsesession->is_picking()) {
-				$item = PickSalesOrderDetailQuery::create()->findOneBySessionid($sessionID);
-				$totalpicked = $item->get_userpickedtotal();
-				$data[] = "ITEMQTY=$totalpicked";
-			} elseif ($whsesession->is_pickingpacking()) {
-				$item = PickSalesOrderDetailQuery::create()->findOneBySessionid($sessionID);
-				$pallet_totals = $item->get_userpickedtotalsbypallet();
-
-				foreach ($pallet_totals as $pallet) {
-					$palletnbr = str_pad($pallet['palletnbr'], 4, ' ');
-					$qty = str_pad($pallet['qty'], 10, ' ');
-					$data[] = "PALLETNBR=$palletnbr|QTY=$qty";
-				}
-			} elseif ($whsesession->is_pickingunguided()) {
+			if ($whsesession->is_pickingunguided()) {
 				$linenbr = $input->get->int('linenbr');
 				$pickitem = PickSalesOrderDetailQuery::create()->filterBySessionidOrder($sessionID, $whsesession->ordernbr)->findOneByLinenbr($linenbr);
 
@@ -212,6 +199,7 @@
 					}
 				} else {
 					$barcodes = $pickitem->get_userpickedtotalsbybin();
+
 					foreach ($barcodes as $barcode) {
 						$binID     = str_pad($barcode['bin'], 8, ' ');
 						$lotserial = str_pad('', 20, ' ');
@@ -225,10 +213,9 @@
 					$url->query->remove('linenbr');
 					$input->$requestmethod->page = $url->getUrl();
 				}
-
 			}
+
 			$session->loc = $input->$requestmethod->text('page');
-			//WhseitempickQuery::create()->filterBySessionidOrderLinenbr(session_id(), $whsesession->ordn, $linenbr)->delete();
 			break;
 		case 'skip-item':
 			$whsesession = WhsesessionQuery::create()->findOneBySessionid(session_id());
