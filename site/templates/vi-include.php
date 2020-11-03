@@ -1,4 +1,6 @@
 <?php
+	use VendorQuery, Vendor;
+
 	$module_vi = $modules->get('DpagesMvi');
 	$module_vi->init_vipage();
 

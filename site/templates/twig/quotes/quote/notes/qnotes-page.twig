@@ -15,30 +15,27 @@
 		<div class="col">
 			<h4>Header Notes</h4>
 		</div>
-		<div class="col text-right">
-			<button type="button" class="btn btn-primary" data-toggle="modal" data-target="#note-modal" data-linenbr="0" data-sequence="0">
+		<div class="col">
+			<button type="button" class="btn btn-primary" data-toggle="modal" data-target="#add-note-modal" data-linenbr="0" data-sequence="0">
 				<i class="fa fa-plus" aria-hidden="true"></i> Add Note
 			</button>
 		</div>
 	</div>
-	{% include 'quotes/quote/notes/qnotes-list.twig' with {'notes': qnotes_qt.get_notes_summarized(qnbr, 0)} %}
+	{% include 'quotes/quote/notes/qnotes-list.twig' with {'notes': quote.get_notes() } %}
 </div>
 
-{% for item in quote.items %}
+{% for item in items %}
 	<div class="row mb-1">
 		<div class="col">
 			<h4>Line Number {{ item.linenbr ~ ': ' ~ item.itemid }}</h4>
 		</div>
 		<div class="col">
-			{{ item.description }}
-		</div>
-		<div class="col text-right">
-			<button type="button" class="btn btn-primary" data-toggle="modal" data-target="#note-modal" data-linenbr="{{ item.linenbr }}" data-sequence="0">
+			<button type="button" class="btn btn-primary" data-toggle="modal" data-target="#add-note-modal" data-linenbr="{{ item.linenbr }}" data-sequence="0">
 				<i class="fa fa-plus" aria-hidden="true"></i> Add Note
 			</button>
 		</div>
 	</div>
 	<div class="mb-3">
-		{% include 'quotes/quote/notes/qnotes-list.twig' with {'notes': qnotes_qt.get_notes_summarized(qnbr, item.linenbr)} %}
+		{% include 'quotes/quote/notes/qnotes-list.twig' with {'notes': item.get_notes() } %}
 	</div>
 {% endfor %}

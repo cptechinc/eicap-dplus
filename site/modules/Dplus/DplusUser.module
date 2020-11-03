@@ -1,4 +1,4 @@
-<?php namespace ProcessWire;
+<?php
 	use LogpermQuery, Logperm;
 	use LogmQuery, Logm;
 	use FuncpermQuery, Funcperm;

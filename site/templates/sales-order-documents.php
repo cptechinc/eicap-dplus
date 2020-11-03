@@ -2,15 +2,14 @@
 	if ($input->get->ordn) {
 		$ordn = $input->get->text('ordn');
 		$document_management = $modules->get('DocumentManagement');
-		$lookup_orders = $modules->get('LookupSalesOrder');
 
-		if ($lookup_orders->lookup_salesorder($ordn) || $lookup_orders->lookup_saleshistory($ordn)) {
+		if (SalesOrderQuery::create()->filterByOrdernumber($ordn)->count() || SalesHistoryQuery::create()->filterByOrdernumber($ordn)->count()) {
 			$page->title = "Sales Order #$ordn Documents";
 
-			if ($lookup_orders->lookup_salesorder($ordn)) {
+			if (SalesOrderQuery::create()->filterByOrdernumber($ordn)->count()) {
 				$documents = $document_management->get_salesorderdocuments($ordn);
-			} elseif ($lookup_orders->lookup_saleshistory($ordn)) {
-				$documents = $document_management->get_saleshistorydocuments($ordn);
+			} elseif (SalesHistoryQuery::create()->filterByOrdernumber($ordn)->count()) {
+				$documents = $document_management->get_salesorderdocuments($ordn);
 			}
 
 			if ($input->get->document && $input->get->folder) {

@@ -1,4 +1,7 @@
 <?php
+	use Map\SalesOrderTableMap;
+	use Map\QnoteTableMap;
+
 /**
  * Initialization file for template files
  *
@@ -12,44 +15,40 @@
 
 include_once("./_func.php"); // include our shared functions
 
-// BUILD AND INSTATIATE CLASSES
-$page->fullURL = new Purl\Url($page->httpUrl);
-$page->fullURL->path = '';
-if (!empty($_SERVER['REQUEST_URI']) && $_SERVER['REQUEST_URI'] != '/') {
-	$page->fullURL->join($_SERVER['REQUEST_URI']);
-}
-
 // CHECK DATABASE CONNECTIONS
 if ($page->id != $config->errorpage_dplusdb) {
-	if (empty(wire('dplusdata')) || empty(wire('dpluso'))) {
-		$modules->get('DplusConnectDatabase')->log_error('At least One database is not connected');
+	if (empty(wire('dplusdata')) || empty(wire('dplusodb'))) {
 		$session->redirect($pages->get($config->errorpage_dplusdb)->url, $http301 = false);
 	}
 
+	$serviceContainer = \Propel\Runtime\Propel::getServiceContainer();
+	$serviceContainer->checkVersion('2.0.0-dev');
+
 	$db_modules = array(
 		'dplusdata' => array(
-			'module'   => 'DplusConnectDatabase',
-			'default'  => true
+			'module'          => 'DplusConnectDatabase',
+			'connection-name' => 'default'
 		),
 		'dpluso' => array(
 			'module'          => 'DplusOnlineDatabase',
-			'default'  => false
+			'connection-name' => 'dplusodb'
 		)
 	);
 
 	foreach ($db_modules as $key => $connection) {
 		$module = $modules->get($connection['module']);
-		$module->connect_propel();
-
-		try {
-			$propel_name = $module->get_connection_name_propel();
-			$$propel_name = $module->get_propel_write_connection();
-			$$propel_name->useDebug(true);
-		} catch (Exception $e) {
-			$module->log_error($e->getMessage());
-			$session->redirect($pages->get($config->errorpage_dplusdb)->url, $http301 = false);
-		}
+		$manager = $module->get_propel_connection();
+		$serviceContainer->setAdapterClass($connection['connection-name'], 'mysql');
+		$serviceContainer->setConnectionManager($connection['connection-name'], $manager);
 	}
+
+	$serviceContainer->setDefaultDatasource('default');
+
+	$con = Propel\Runtime\Propel::getWriteConnection(SalesOrderTableMap::DATABASE_NAME);
+	$con->useDebug(true);
+
+	$dpluso = Propel\Runtime\Propel::getWriteConnection(QnoteTableMap::DATABASE_NAME);
+	$dpluso->useDebug(true);
 
 	$templates_nosignin = array('login', 'redir');
 
@@ -60,23 +59,6 @@ if ($page->id != $config->errorpage_dplusdb) {
 	}
 
 	$user->setup(session_id());
-} else {
-	if (!$input->get->retry) {
-		$configimporter = $modules->get('Configs');
-		if ($configimporter->export_datafile_exists()) {
-			$configimporter->import();
-			$page->fullURL->query->set('retry', 'true');
-			$session->redirect($page->fullURL->getUrl());
-		}
-	} else {
-		try {
-			$con    = $modules->get('DplusConnectDatabase')->get_propel_write_connection();
-			$dpluso = $modules->get('DplusOnlineDatabase')->get_propel_write_connection();
-		} catch (Exception $e) {
-			$page->show_title = true;
-		}
-		$session->redirect($pages->get('/')->url);
-	}
 }
 
 // ADD JS AND CSS
@@ -102,6 +84,13 @@ $config->scripts->append(hash_templatefile('scripts/classes.js'));
 $config->scripts->append(hash_templatefile('scripts/main.js'));
 
 
+// BUILD AND INSTATIATE CLASSES
+$page->fullURL = new Purl\Url($page->httpUrl);
+$page->fullURL->path = '';
+if (!empty($_SERVER['REQUEST_URI']) && $_SERVER['REQUEST_URI'] != '/') {
+	$page->fullURL->join($_SERVER['REQUEST_URI']);
+}
+
 // SET CONFIG PROPERTIES
 if ($input->get->modal) {
 	$config->modal = true;
@@ -125,8 +114,8 @@ $config->customer = $pages->get('/config/customer/');
 
 $session->sessionid = session_id();
 
-$config->twigloader = new Twig_Loader_Filesystem($config->paths->templates.'twig/');
-$config->twig = new Twig_Environment($config->twigloader, [
+$loader = new Twig_Loader_Filesystem($config->paths->templates.'twig/');
+$config->twig = new Twig_Environment($loader, [
 	'cache' => $config->paths->templates.'twig/cache/',
 	'auto_reload' => true,
 	'debug' => true

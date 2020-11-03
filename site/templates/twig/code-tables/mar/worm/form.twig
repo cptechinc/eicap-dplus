@@ -1,15 +1,14 @@
-{# worm is an instance of CustomerWriteOffCode #}
 <form action="{{ page.url }}" method="POST" id="code-edit-form">
 	<input type="hidden" name="table" value="worm">
 
 	<div class="form-group">
 		<label for="code">Code</label>
-		<input type="text" name="code" class="form-control" maxlength="{{ max_length_code }}" value="" id="code">
+		<input type="text" name="code" class="form-control" value="" id="code">
 	</div>
 
 	<div class="form-group">
 		<label for="description">Description</label>
-		<input type="text" name="description" class="form-control" maxlength="20" value="" id="description">
+		<input type="text" name="description" class="form-control" value="" id="description">
 	</div>
 
 	<div class="form-group">
@@ -24,6 +23,6 @@
 		<button type="submit" class="btn btn-success">
 			<i class="fa fa-floppy-o" aria-hidden="true"></i> Save
 		</button>
-		<button type="button" class="btn btn-warning" data-dismiss="modal">Close</button>
+		<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
 	</div>
 </form>

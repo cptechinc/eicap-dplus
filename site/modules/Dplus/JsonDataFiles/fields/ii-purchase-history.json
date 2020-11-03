@@ -109,12 +109,7 @@
             "type": "N",
             "headingjustify": "r",
             "datajustify": "r"
-        },
-        "Boxes Received": {
-            "type": "N",
-            "headingjustify": "r",
-            "datajustify": "r"
-         }
+        }
     },
     "lotserial": {
         "Lot/Serial Number": {
@@ -131,11 +126,6 @@
             "type": "N",
             "headingjustify": "r",
             "datajustify": "r"
-        },
-        "Lot Expiration Date": {
-            "type": "D",
-            "headingjustify": "c",
-            "datajustify": "l"
         }
     }
 }

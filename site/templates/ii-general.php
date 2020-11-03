@@ -1,7 +1,7 @@
 <?php
 	include_once('./ii-include.php');
 
-	if ($lookup_ii->lookup_itm($itemID)) {
+	if ($itemquery->count()) {
 		$page->show_breadcrumbs = false;
 		$page->body .= $config->twig->render('items/ii/bread-crumbs.twig', ['page' => $page, 'item' => $item]);
 		$page->title = "$itemID General";
@@ -38,13 +38,9 @@
 					$session->redirect($page->get_itemgeneralURL($itemID));
 				}
 
-				if ($json_usage['error']) {
-					$page->body .= $config->twig->render('util/alert.twig', ['type' => 'danger', 'title' => 'Error!', 'iconclass' => 'fa fa-warning fa-2x', 'message' => $json_usage['errormsg']]);
-				} else {
-					$page->body .= $config->twig->render('items/ii/usage/sales-usage.twig', ['page' => $page, 'json' => $json_usage, 'module_json' => $module_json]);
-					$page->body .= $config->twig->render('items/ii/usage/warehouses.twig', ['page' => $page, 'json' => $json_usage, 'module_json' => $module_json, 'module_usage' => $module_usage]);
-					$page->js    = $config->twig->render('items/ii/usage/warehouses.js.twig', ['page' => $page, 'json' => $json_usage, 'module_json' => $module_json, 'module_usage' => $module_usage]);
-				}
+				$page->body .= $config->twig->render('items/ii/usage/sales-usage.twig', ['page' => $page, 'json' => $json_usage, 'module_json' => $module_json]);
+				$page->body .= $config->twig->render('items/ii/usage/warehouses.twig', ['page' => $page, 'json' => $json_usage, 'module_json' => $module_json, 'module_usage' => $module_usage]);
+				$page->js = $config->twig->render('items/ii/usage/warehouses.js.twig', ['page' => $page, 'json' => $json_usage, 'module_json' => $module_json, 'module_usage' => $module_usage]);
 			} else {
 				$page->body .= $config->twig->render('util/error-page.twig', ['title' => $page->title, 'msg' => 'II Usage could not be loaded']);
 			}
@@ -59,11 +55,7 @@
 					$session->redirect($page->get_itemgeneralURL($itemID));
 				}
 
-				if ($json_notes['error']) {
-					$page->body .= $config->twig->render('util/alert.twig', ['type' => 'danger', 'title' => 'Error!', 'iconclass' => 'fa fa-warning fa-2x', 'message' => $json_notes['errormsg']]);
-				} else {
-					$page->body .= $config->twig->render('items/ii/general/notes.twig', ['page' => $page, 'json' => $json_notes, 'module_json' => $module_json]);
-				}
+				$page->body .= $config->twig->render('items/ii/general/notes.twig', ['page' => $page, 'json' => $json_notes, 'module_json' => $module_json]);
 			} else {
 				$page->body .= $config->twig->render('util/error-page.twig', ['title' => $page->title, 'msg' => 'II Notes could not be loaded']);
 			}
@@ -78,12 +70,7 @@
 					$module_json->remove_file(session_id(), $page->jsoncode);
 					$session->redirect($page->get_itemgeneralURL($itemID));
 				}
-
-				if ($json_misc['error']) {
-					$page->body .= $config->twig->render('util/alert.twig', ['type' => 'danger', 'title' => 'Error!', 'iconclass' => 'fa fa-warning fa-2x', 'message' => $json_misc['errormsg']]);
-				} else {
-					$page->body .= $config->twig->render('items/ii/general/misc.twig', ['page' => $page, 'json' => $json_misc, 'module_json' => $module_json]);
-				}
+				$page->body .= $config->twig->render('items/ii/general/misc.twig', ['page' => $page, 'json' => $json_misc, 'module_json' => $module_json]);
 			} else {
 				$page->body .= $config->twig->render('util/error-page.twig', ['title' => $page->title, 'msg' => 'II Misc could not be loaded']);
 			}

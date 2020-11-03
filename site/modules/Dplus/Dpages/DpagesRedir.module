@@ -130,7 +130,6 @@ class DpagesRedir extends DplusPwPages implements Module {
 			'summary' => 'Dplus Create ProcesWire Redirect Pages',
 			'singular' => true,
 			'autoload' => true,
-			'requires' => array('DplusPwPages', 'Dpages'),
 		);
 	}
 }

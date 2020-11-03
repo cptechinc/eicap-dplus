@@ -2,21 +2,22 @@
 	$config_salesorders = $modules->get('ConfigsSalesOrders');
 	$modules->get('DpagesMso')->init_salesorder_hooks();
 	$html = $modules->get('HtmlWriter');
-	$lookup_orders = $modules->get('LookupSalesOrder');
 
 	if ($input->get->ordn) {
 		$ordn = $input->get->text('ordn');
 
-		if ($lookup_orders->lookup_salesorder($ordn) || $lookup_orders->lookup_saleshistory($ordn)) {
+		if (SalesOrderQuery::create()->filterByOrdernumber($ordn)->count() || SalesHistoryQuery::create()->filterByOrdernumber($ordn)->count()) {
 			$page->print = true;
 			$page->title = "Sales Order #$ordn";
 			$type = 'order';
 
-			if ($lookup_orders->lookup_salesorder($ordn)) {
+			if (SalesOrderQuery::create()->filterByOrdernumber($ordn)->count()) {
 				$order = SalesOrderQuery::create()->findOneByOrdernumber($ordn);
-			} elseif ($lookup_orders->lookup_saleshistory($ordn)) {
+				$order_items = SalesOrderDetailQuery::create()->filterByOrdernumber($ordn)->find();
+			} elseif (SalesHistoryQuery::create()->filterByOrdernumber($ordn)->count()) {
 				$type = 'history';
 				$order = SalesHistoryQuery::create()->findOneByOrdernumber($ordn);
+				$order_items = SalesHistoryDetailQuery::create()->filterByOrdernumber($ordn)->find();
 			}
 
 			$customer = CustomerQuery::create()->findOneByCustid($order->custid);
@@ -31,7 +32,7 @@
 
 			$page->body .= $config->twig->render("sales-orders/sales-$type/print/header.twig", ['page' => $page, 'customer' => $customer, 'order' => $order, 'dpluscustomer' => $dpluscustomer, 'barcoder' => $barcoder]);
 			$page->body .= $html->div('class=clearfix mb-3');
-			$page->body .= $config->twig->render("sales-orders/sales-$type/print/items.twig", ['page' => $page, 'order' => $order]);
+			$page->body .= $config->twig->render("sales-orders/sales-$type/print/items.twig", ['page' => $page, 'order' => $order, 'order_items' => $order_items]);
 			$page->body .= $config->twig->render("sales-orders/sales-$type/print/totals.twig", ['page' => $page, 'order' => $order]);
 		} else {
 			$page->headline = $page->title = "Sales Order #$ordn could not be found";
@@ -55,16 +56,15 @@
 		$pdfmaker->set_url($page->get_printpdfURL());
 		$pdfmaker->generate_pdf();
 	} else {
+		if ($page->print) {
+			$page->show_title = true;
 
-	}
+			if ($page->is_pdf()) {
+				$page->show_title = false;
+			}
 
-	if ($page->print) {
-		$page->show_title = true;
-
-		if ($page->is_pdf()) {
-			$page->show_title = false;
+			include __DIR__ . "/blank-page.php";
+		} else {
+			include __DIR__ . "/basic-page.php";
 		}
-		include __DIR__ . "/blank-page.php";
-	} else {
-		include __DIR__ . "/basic-page.php";
 	}

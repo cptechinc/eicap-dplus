@@ -107,19 +107,6 @@ class XrefUpc extends WireData implements Module {
 	}
 
 	/**
-	 * Returns if UPC Code Matches ItemID
-	 * @param  string $upc    UPC Code
-	 * @param  string $itemID Item ID
-	 * @return bool
-	 */
-	public function upc_isfor_itemID($upc, $itemID) {
-		$q = $this->get_query();
-		$q->filterByUpc($upc);
-		$q->filterByItemid($itemID);
-		return boolval($q->count());
-	}
-
-	/**
 	 * Return if Primary UPC for itemID exists
 	 * @param  string $itemID Item ID
 	 * @return bool
@@ -294,10 +281,9 @@ class XrefUpc extends WireData implements Module {
 		$config = $this->wire('config');
 		$dplusdb = $this->wire('modules')->get('DplusConnectDatabase')->db_name;
 		$data = array("DBNAME=$dplusdb", 'UPDATEUPC', "UPCCODE=$item->upc", "OURITEM=$item->itemid");
-
-		$requestor = $this->wire('modules')->get('DplusRequest');
-		$requestor->write_dplusfile($data, session_id());
-		$requestor->cgi_request($config->cgis['database'], session_id());
+		$this->wire('modules')->get('Xrefs')->write_dplusfile($data, session_id());
+		$http = new WireHttp();
+		$http->get("127.0.0.1/cgi-bin/".$config->cgis['database']."?fname=".session_id());
 	}
 
 	public static function getModuleInfo() {

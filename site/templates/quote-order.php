@@ -9,7 +9,8 @@
 
 		if (QuoteQuery::create()->filterByQuoteid($qnbr)->count()) {
 			if (!QuothedQuery::create()->filterBySessionidQuote(session_id(), $qnbr)->count()) {
-				$modules->get('DplusRequest')->self_request($page->edit_quoteURL($qnbr));
+				$http = new ProcessWire\WireHttp();
+				$http->get($page->edit_quoteURL($qnbr));
 			}
 
 			$page->title = "Push Quote #$qnbr to Order";

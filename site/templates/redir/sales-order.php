@@ -101,16 +101,16 @@
 			$editorder->setShipstate($input->$requestmethod->text('shipto_state'));
 			$editorder->setShipzip($input->$requestmethod->text('shipto_zip'));
 			$editorder->setContact($input->$requestmethod->text('contact'));
-			$editorder->setPhone($input->$requestmethod->text('phone'));
+			$editorder->setPhone(str_replace('-', '', $input->$requestmethod->text('phone')));
 			$editorder->setExtension($input->$requestmethod->text('phone_ext'));
-			$editorder->setFax($input->$requestmethod->text('fax'));
+			$editorder->setFax(str_replace('-', '', $input->$requestmethod->text('fax')));
 			$editorder->setEmail($input->$requestmethod->text('email'));
 			$editorder->setCustpo($input->$requestmethod->text('custpo'));
 			$editorder->setReleasenbr($input->$requestmethod->text('releasenumber'));
 			$editorder->setShipviacd($input->$requestmethod->text('shipvia'));
 			$editorder->setRqstDate($input->$requestmethod->text('date_requested'));
 			$editorder->setShipcom($input->$requestmethod->text('shipcomplete'));
-			$editorder->setTermcode($input->$requestmethod->text('termscode'));
+			$editorder->setPaymenttype($input->$requestmethod->text('paytype'));
 			$editorder->save();
 			$data = array("DBNAME=$dplusdb", 'SALESHEAD', "ORDERNO=$ordn", "CUSTID=$editorder->custid");
 
@@ -142,27 +142,6 @@
 			$data = array("DBNAME=$dplusdb", 'SALEDET', "ORDERNO=$ordn", "ITEMID=$itemID", "QTY=$qty", "CUSTID=$custID");
 			$session->loc = $pages->get('pw_template=sales-order-edit')->url."?ordn=$ordn";
 			break;
-		case 'add-popular-items':
-			$ordn = $input->$requestmethod->text('ordn');
-			$data = array("DBNAME=$dplusdb", 'ORDERADDMULTIPLE', "ORDERNO=$ordn");
-			$qtys = $input->$requestmethod->array('qty');
-			$itemIDs = $input->$requestmethod->array('itemID');
-
-			for ($i = 0; $i < sizeof($qtys); $i++) {
-				if (!empty($qtys[$i])) {
-					$itemID = str_pad($itemIDs[$i], 30, ' ');
-					$qty = $qtys[$i];
-					$data[] = "ITEMID={$itemID}QTY=$qty";
-				}
-			}
-
-			if ($input->$requestmethod->page) {
-				$url = new Purl\Url($input->$requestmethod->text('page'));
-				$session->loc = $url->getUrl();
-			} else {
-				$session->loc = $pages->get('pw_template=sales-order-edit')->url."?ordn=$ordn";
-			}
-			break;
 		case 'remove-line':
 			$ordn = $input->$requestmethod->text('ordn');
 			$linenbr = $input->$requestmethod->int('linenbr');
@@ -181,9 +160,9 @@
 	}
 
 	if (!empty($data)) {
-		$requestor = $modules->get('DplusRequest');
-		$requestor->write_dplusfile($data, $filename);
-		$requestor->cgi_request($config->cgis['default'], $filename);
+		write_dplusfile($data, $filename);
+		$http = new WireHttp();
+		$http->get("127.0.0.1/cgi-bin/".$config->cgis['default']."?fname=$filename");
 	}
 
 	if (!empty($session->get('loc')) && !$config->ajax) {

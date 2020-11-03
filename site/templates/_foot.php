@@ -1,16 +1,6 @@
-		<footer class="bg-dark pb-3">
+		<footer class="bg-info pb-3">
 			<div class='container'>
-				<div class="row">
-					<div class="col-sm-4 text-white">
-						<?= $appconfig->title; ?> @ <?= $config->customer->company_name; ?> <br>
-						&copy; <?= date('Y'); ?> <?= $appconfig->company_name; ?>
-					</div>
-					<div class="col-sm-4">
-						<strong class="text-white">User: <?= $user->loginid; ?></strong> <br>
-						<strong class="text-white">Session ID: <?= session_id(); ?></strong>
-					</div>
-					<div class="col-sm-4"></div>
-				</div>
+				<strong class="text-white">Session ID: <?= session_id(); ?></strong>
 			</div>
 			<!-- /.container -->
 		</footer>

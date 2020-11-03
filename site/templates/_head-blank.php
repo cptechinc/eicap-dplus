@@ -11,6 +11,7 @@
 		<?php foreach($config->styles->unique() as $css) : ?>
 			<link rel="stylesheet" type="text/css" href="<?= $css; ?>" />
 		<?php endforeach; ?>
+		<?php include ('_config.js.php'); ?>
 	</head>
 
 	<body class="fuelux">

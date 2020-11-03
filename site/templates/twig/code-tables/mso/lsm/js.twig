@@ -4,7 +4,7 @@ $(function() {
 		var button = $(event.relatedTarget); // Button that triggered the modal
 		var code = button.data('code').toString(); // Extract info from data-* attributes
 		var description = button.data('description').toString(); // Extract info from data-* attributes
-		var updateinventorywatch = button.data('updateinventorywatch').toString(); // Extract info from data-* attributes
+
 		var modal = $(this);
 
 		modal.find('input[name=code]').val(code);
@@ -33,10 +33,12 @@ $(function() {
 				required: true,
 				maxlength: {{ max_length_code }}
 			},
+			description: 'required',
 			updateinventorywatch: 'required'
 		},
 		messages: {
 			code: "Please check the Code value (Max Length: {{ max_length_code }})",
+			description: 'Please enter a description for the code'
 		},
 		submitHandler: function(form) {
 			form.submit();

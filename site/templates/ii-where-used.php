@@ -1,7 +1,7 @@
 <?php
 	include_once('./ii-include.php');
 
-	if ($lookup_ii->lookup_itm($itemID)) {
+	if ($itemquery->count()) {
 		$page->show_breadcrumbs = false;
 		$page->body .= $config->twig->render('items/ii/bread-crumbs.twig', ['page' => $page, 'item' => $item]);
 		$page->title = "$itemID Where Used";
@@ -15,15 +15,9 @@
 				$session->redirect($page->get_itemwhereusedURL($itemID));
 			}
 			$session->whereusedtry = 0;
-
 			$refreshurl = $page->get_itemwhereusedURL($itemID);
 			$page->body .= $config->twig->render('items/ii/ii-links.twig', ['page' => $page, 'itemID' => $itemID, 'lastmodified' => $module_json->file_modified(session_id(), $page->jsoncode), 'refreshurl' => $refreshurl]);
-
-			if ($json['error']) {
-				$page->body .= $config->twig->render('util/alert.twig', ['type' => 'danger', 'title' => 'Error!', 'iconclass' => 'fa fa-warning fa-2x', 'message' => $json['errormsg']]);
-			} else {
-				$page->body .= $config->twig->render('items/ii/where-used/where-used.twig', ['page' => $page, 'json' => $json, 'module_json' => $module_json]);
-			}
+			$page->body .= $config->twig->render('items/ii/where-used/where-used.twig', ['page' => $page, 'json' => $json, 'module_json' => $module_json]);
 		} else {
 			if ($session->whereusedtry > 3) {
 				$page->headline = $page->title = "Where Used File could not be loaded";

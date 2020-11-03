@@ -1,6 +1,8 @@
 <?php namespace ProcessWire;
 
 class WarehouseManagement extends WireData implements Module {
+
+
 	const PICKING_OPTIONS_COMPANY = array(
 		'provalley' => 'PickingProvalley'
 	);

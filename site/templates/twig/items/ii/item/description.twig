@@ -1,4 +1,12 @@
-<div class="row mb-3">
+
+<div class="row">
+	{% if page.item_image_exists(item.itemid) %}
+		<div class="col-sm-4">
+			<a href="{{ page.item_imageURL(item.itemid) }}" class="image-link" target="_blank">
+				<img src="{{ page.item_imageURL(item.itemid) }}" alt="image of {{ item.itemid }}" height="200">
+			</a>
+		</div>
+	{% endif %}
 	<div class="col-sm-8">
 		<form action="{{ page.url }}" method="GET" class="allow-enterkey-submit">
 			<div class="form-row">
@@ -26,12 +34,4 @@
 			</div>
 		{% endif %}
 	</div>
-
-	{% if page.item_image_exists(item.itemid) %}
-		<div class="col-sm-4">
-			<a href="{{ page.item_imageURL(item.itemid) }}" class="image-link" target="_blank">
-				<img src="{{ page.item_imageURL(item.itemid) }}" alt="image of {{ item.itemid }}" height="200">
-			</a>
-		</div>
-	{% endif %}
 </div>

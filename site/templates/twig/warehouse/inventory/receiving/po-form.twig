@@ -1,13 +1,11 @@
-<form action="{{ page.formurl }}" method="post" class="allow-enterkey-submit">
+<form action="{{ page.formurl }}" method="post">
 	<input type="hidden" name="action" value="init-receive">
 	<div class="form-group">
 		<label for="ponbr">PO Number</label>
 		<div class="input-group">
 			<input type="text" class="form-control" name="ponbr" id="ponbr">
 			<span class="input-group-append">
-				<button type="submit" class="btn btn-success">
-					<i class="fa fa-search" aria-hidden="true"></i> Find
-				</button>
+				<button type="submit" class="btn btn-primary">Submit</button>
 			</span>
 		</div>
 	</div>

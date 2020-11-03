@@ -7,16 +7,6 @@
 				'name'  => 'dplus_function',
 				'type'  => 'text',
 				'label' => 'Dplus Function'
-			),
-			'function_url' => array(
-				'name'  => 'function_url',
-				'type'  => 'text',
-				'label' => 'URL to function'
-			),
-			'pw_template' => array(
-				'name'  => 'pw_template',
-				'type'  => 'text',
-				'label' => 'ProcessWire Template'
 			)
 		);
 
@@ -30,11 +20,6 @@
 				'name'   => 'dplus-function',
 				'fields' => array('dplus_function', 'pw_template', 'summary'),
 				'paginated' => true
-			),
-			'dplus-function-link' => array(
-				'name'   => 'dplus-function-link',
-				'fields' => array('function_url', 'dplus_function', 'pw_template', 'summary'),
-				'paginated' => false
 			),
 			'dplus-json' => array(
 				'name'   => 'dplus-json',
@@ -195,26 +180,6 @@
 				$page = $event->object;
 				$event->return = $page->fullURL->query->has('filter');
 			});
-
-			$this->addHook('Page::has_redirect_from', function($event) {
-				$page = $event->object;
-				$event->return = $page->fullURL->query->has('redirect_from');
-			});
-
-			$this->addHookProperty('Page::redirect_from', function($event) {
-				$page = $event->object;
-				$event->return = $page->fullURL->query->get('redirect_from');
-			});
-
-			$this->addHookProperty('Page::redirect_from_page', function($event) {
-				$page = $event->object;
-				$redirect_from = $page->fullURL->query->get('redirect_from');
-				$patharray = explode('/', trim($this->wire('config')->paths->root, '/'));
-				$basepath = end($patharray);
-
-				$redirect_from = ltrim(str_replace("$basepath", '', $redirect_from), '/');
-				$event->return = $this->wire('pages')->get("/$redirect_from");
-			});
 		}
 
 		/**
@@ -314,7 +279,7 @@
 		}
 
 		public function set_fieldproperties(Field $f, array $field) {
-			$f->type = ctype_upper($field['type']) ? $field['type'] : ucfirst($field['type']); // get a field type
+			$f->type = ucfirst($field['type']); // get a field type
 			$f->name = $field['name'];
 			$f->label = $field['label'];
 
@@ -357,7 +322,7 @@
 		 * @return bool Was Field Group Saved?
 		 */
 		protected function update_fieldgroup($template) {
-			$pw_fields = $this->wire('templates')->get($template)->fieldgroup;
+			$pw_fields = wire('templates')->get($template)->fieldgroup;
 
 			if (get_class($pw_fields) != 'ProcessWire\Fieldgroup') {
 				$pw_fields = $this->create_fieldgroup($template);
@@ -366,34 +331,18 @@
 			$templatefields = $this::TEMPLATES[$template]['fields'];
 
 			foreach ($templatefields as $fieldname) {
-				if (!in_array($fieldname, $this::PROCESSWIRE_FIELDS)) {
-					if (array_key_exists($fieldname, $this::FIELDS)) {
-						$field = $this::FIELDS[$fieldname];
-					} else {
-						$pw_pages = $this->wire('modules')->get('DplusPwPages');
-						$field = $pw_pages::FIELDS[$fieldname];
-					}
+				$field = $this::FIELDS[$fieldname];
 
-					if (boolval($this->wire('fields')->get($fieldname)) == false) {
-						$this->create_field($field);
-					} else {
-						if (!in_array($fieldname, $this::PROCESSWIRE_FIELDS) && in_array($fieldname, $this::FIELDS)) {
-							$this->update_field($field);
-						}
+				if (boolval(wire('fields')->get($fieldname)) == false) {
+					$this->create_field($field);
+				} else {
+					if (!in_array($fieldname, $this::PROCESSWIRE_FIELDS) && in_array($fieldname, $this::FIELDS)) {
+						$this->update_field($field);
 					}
 				}
-
-				$pw_field = $this->wire('fields')->get($fieldname);
+				$pw_field = wire('fields')->get($fieldname);
 				$pw_fields->add($pw_field);
 			}
-
-			foreach ($this::PROCESSWIRE_FIELDS as $fieldname) {
-				if ($pw_fields->hasField($fieldname) == false) {
-					$pw_field = $this->wire('fields')->get($fieldname);
-					$pw_fields->add($pw_field);
-				}
-			}
-
 			return $pw_fields->save();
 		}
 
@@ -403,14 +352,13 @@
 		 * @return bool Was Template able to be saved?
 		 */
 		protected function create_template($template) {
-			$allow_pagination = array_key_exists('paginated', $this::TEMPLATES[$template]) ? $this::TEMPLATES[$template]['paginated'] : 0;
 			$t = new Template();
 			$t->name = $template;
 			$t->fieldgroup = $this->create_fieldgroup($template);
 			$t->save();
 			$this->update_fieldgroup($template);
 			$t->fieldgroup = $this->wire('fieldgroups')->get($template);
-			$this->allowPageNum = $allow_pagination ? 1 : 0;
+			$this->allowPageNum = $this::TEMPLATES[$template]['paginated'] ? 1 : 0;
 			$this->slashPageNum = 1;
 			$t->save();
 		}
@@ -421,16 +369,10 @@
 		 * @return bool Was Template able to be saved?
 		 */
 		protected function update_template($template) {
-			if (array_key_exists('paginated', $this::TEMPLATES[$template])) {
-				$allow_pagination = $this::TEMPLATES[$template]['paginated'];
-			} else {
-				$allow_pagination = 1;
-			}
-
 			$t = wire('templates')->get($template);
 			$this->update_fieldgroup($template);
 			$t->fieldgroup = wire('templates')->get($template)->fieldgroup;
-			$t->allowPageNum = $allow_pagination;
+			$t->allowPageNum = $this::TEMPLATES[$template]['paginated'] ? 1 : 0;
 			$t->slashPageNum = 1;
 			$t->save();
 		}
@@ -455,18 +397,13 @@
 
 			if (in_array($page['template'], array_keys($default_templates))) {
 				foreach ($default_templates[$page['template']]['fields'] as $fieldname) {
-					if (array_key_exists($fieldname, $page)) {
-						$pw_page->$fieldname = $page[$fieldname];
-					}
-				}
-			} else {
-				foreach ($this::TEMPLATES[$page['template']]['fields'] as $fieldname) {
-					if (array_key_exists($fieldname, $page)) {
-						$pw_page->$fieldname = $page[$fieldname];
-					}
+					$pw_page->$fieldname = $page[$fieldname];
 				}
 			}
 
+			foreach ($this::TEMPLATES[$page['template']]['fields'] as $fieldname) {
+				$pw_page->$fieldname = $page[$fieldname];
+			}
 			return $pw_page->save();
 		}
 
@@ -489,12 +426,10 @@
 				foreach ($default_templates[$page['template']]['fields'] as $fieldname) {
 					$pw_page->$fieldname = $page[$fieldname];
 				}
-			} else {
-				foreach ($this::TEMPLATES[$page['template']]['fields'] as $fieldname) {
-					if (array_key_exists($fieldname, $page)) {
-						$pw_page->$fieldname = $page[$fieldname];
-					}
-				}
+			}
+
+			foreach ($this::TEMPLATES[$page['name']]['fields'] as $fieldname) {
+				$pw_page->$fieldname = $page[$fieldname];
 			}
 			return $pw_page->save();
 		}

@@ -1,6 +1,6 @@
 <?php namespace ProcessWire;
 
-include_once(__DIR__.'/../CodeTablesResponse.php');
+include_once(__DIR__.'../CodeTablesResponse.php');
 
 use Purl\Url;
 
@@ -97,19 +97,15 @@ class CodeTablesIgpm extends WireData implements Module {
 			$record->delete();
 		} else {
 			$description = $input->$rm->text('description');
-			$sales_program = $input->$rm->text('sales_program');
-			$cost_percent = $input->$rm->text('cost_percent');
 			$record->setDescription($description);
-			$record->setSales_program($sales_program);
-			$record->setCost_percent($cost_percent);
 			$record->setDate(date('Ymd'));
 			$record->setTime(date('His'));
 			$record->setDummy('P');
 
-			// if ($config_so->is_request_program()) {
-			// 	$sales_program = $input->$rm->text('sales_program');
-			// 	$record->setSales_program($sales_program);
-			// }
+			if ($config_so->is_request_program()) {
+				$sales_program = $input->$rm->text('sales_program');
+				$record->setSales_program($sales_program);
+			}
 		}
 
 		$this->wire('session')->response_codetable = $this->save_and_process_response($table, $code, $record);

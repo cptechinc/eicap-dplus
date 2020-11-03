@@ -2,8 +2,6 @@
 	<a href="{{ page.get_finishorderURL() }}" class="btn btn-success">
 		<i class="fa fa-floppy-o" aria-hidden="true"></i> Finish Picking
 	</a>
-	&nbsp;
-	<a href="{{ page.get_exitorderURL() }}" class="btn btn-danger exit-order">Exit Order</a>
 </div>
 <div class="list-group">
 	<div class="list-group-item">
@@ -17,7 +15,7 @@
 		</div>
 	</div>
 	{% for item in lineitems %}
-		<div class="list-group-item first-txn-row {{ item.count_pickeditems() > item.qtyordered ? 'bg-warning text-white'}}">
+		<div class="list-group-item first-txn-row">
 			<div class="row">
 				<div class="col-sm-1">
 					{% if item.count_pickeditems() %}
@@ -29,16 +27,8 @@
 					{% endif %}
 				</div>
 				<div class="col-sm-4">
-					{{ item.itemid }}
-					{% if item.description %}
-						<br>
-						<small>{{ item.description }}</small>
-					{% endif %}
-
-					{% if item.count_pickeditems() > item.qtyordered %}
-						<br>
-						<small> You are Picking more boxes than what was ordered </small>
-					{% endif %}
+					{{ item.itemid }} <br>
+					<small>{{ item.description }}</small>
 				</div>
 				<div class="col-sm-1">{{ item.qtyordered }}</div>
 				<div class="col-sm-1">{{ item.qtypulled }}</div>

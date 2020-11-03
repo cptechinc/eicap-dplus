@@ -18,6 +18,7 @@
 
 		$page->show_breadcrumbs = false;
 		$page->body .= $config->twig->render('customers/ci/bread-crumbs.twig', ['page' => $page, 'customer' => $customer]);
+
 		$page->body .= $config->twig->render('customers/ci/ci-links.twig', ['page' => $page, 'custID' => $custID]);
 
 		if ($input->get->folder) {

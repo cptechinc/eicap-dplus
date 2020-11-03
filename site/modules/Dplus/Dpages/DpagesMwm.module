@@ -186,7 +186,7 @@ class DpagesMwm extends Dpages implements Module {
 			'title'          => 'Receiving',
 			'summary'        => 'Receive Purchase Orders',
 			'parent'         => '/warehouse/inventory/',
-			'dplus_function' => 'er',
+			'dplus_function' => '',
 			'pw_template'    => 'whse-receiving'
 		),
 		'menu-pick' => array(
@@ -224,14 +224,14 @@ class DpagesMwm extends Dpages implements Module {
 			'dplus_function' => 'porpp',
 			'pw_template'    => 'whse-packing',
 		),
-		'whse-print-pick-item-label' => array(
+		'whse-print-order-item-label' => array(
 			'template'       => 'warehouse-function',
 			'name'           => 'order-item',
 			'title'          => 'Print Item Label',
 			'summary'        => 'Print a Label for an Order Item',
 			'parent'         => '/warehouse/inventory/print-item-label/',
 			'dplus_function' => 'pilbl',
-			'pw_template'    => 'whse-print-pick-item-label'
+			'pw_template'    => 'whse-print-order-item-label'
 		),
 		'whse-physical-count' => array(
 			'template'       => 'warehouse-function',
@@ -244,13 +244,14 @@ class DpagesMwm extends Dpages implements Module {
 		),
 	);
 
-	public function init() {
-		$this->addHook('Page(template=warehouse-menu|warehouse-function)::get_loginURL', function($event) {
-			$url = new Url($this->wire('pages')->get('template=warehouse-menu, dplus_function=wm')->child('template=redir')->url);
-			$url->query->set('action', 'login');
-			$url->query->set('sessionID', session_id());
-			$event->return = $url->getUrl();
-		});
+	public static function getModuleInfo() {
+		return array(
+			'title' => 'Dplus Online Warehouse Pages',
+			'version' => 101,
+			'summary' => 'Installs and creates Dplus Online Warehouse Pages',
+			'singular' => true,
+			'autoload' => true,
+		);
 	}
 
 	public function init_picking() {
@@ -294,8 +295,7 @@ class DpagesMwm extends Dpages implements Module {
 			$p = $event->object;
 			$item = $event->arguments(0); // Instance of PickSalesOrderDetail
 			$url = new Url($p->fullURL->getUrl());
-			$url->query->set('linenbr', $item->linenbr);
-			$url->query->set('sublinenbr', $item->sublinenbr);
+			$url->query->set('linenbr',$item->recno);
 			$event->return = $url->getUrl();
 		});
 
@@ -310,18 +310,6 @@ class DpagesMwm extends Dpages implements Module {
 			$event->return = $url->getUrl();
 		});
 
-		$this->addHook('Page::get_redirURL', function($event) {
-			$p = $event->object;
-			$url = new Url($p->parent('template=warehouse-menu')->child('template=redir')->url);
-			$event->return = $url->getUrl();
-		});
-
-		$this->addHook('Page::get_removescanURL', function($event) {
-			$p = $event->object;
-			$url = new Url($p->fullURL->getUrl());
-			$url->query->remove('scan');
-			$event->return = $url->getUrl();
-		});
 	}
 
 	public function init_pickingpacking() {
@@ -343,16 +331,5 @@ class DpagesMwm extends Dpages implements Module {
 			$url->query->set('recno', $item->recno);
 			$event->return = $url->getUrl();
 		});
-	}
-
-	public static function getModuleInfo() {
-		return array(
-			'title' => 'Dplus Online Warehouse Pages',
-			'version' => 101,
-			'summary' => 'Installs and creates Dplus Online Warehouse Pages',
-			'singular' => true,
-			'autoload' => true,
-			'requires' => array('DplusPwPages', 'Dpages'),
-		);
 	}
 }

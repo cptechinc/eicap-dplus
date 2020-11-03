@@ -2,6 +2,7 @@
 
 use Purl\Url;
 
+
 /**
  * class DpagesMvi
  *
@@ -110,14 +111,6 @@ class DpagesMvi extends Dpages implements Module {
 			'summary'        => 'Vendor Menu',
 			'parent'         => '/',
 			'dplus_function' => 'mvi'
-		),
-		'vi-admin' => array(
-			'template'       => 'dplus-menu',
-			'name'           => 'admin',
-			'title'          => 'VI Administration',
-			'summary'        => 'Vendor Information Administration',
-			'parent'         => '/mvi/',
-			'dplus_function' => 'viadmn'
 		),
 		'vi' => array(
 			'template'       => 'dplus-function',
@@ -478,7 +471,7 @@ class DpagesMvi extends Dpages implements Module {
 			'summary' => 'Installs and creates Dplus Online Vendor Pages',
 			'singular' => true,
 			'autoload' => true,
-			'requires' => array('DplusPwPages', 'Dpages'),
+			'requires' => array('Dpages')
 		);
 	}
 }

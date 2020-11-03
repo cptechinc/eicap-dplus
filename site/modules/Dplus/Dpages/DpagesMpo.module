@@ -56,13 +56,13 @@ class DpagesMpo extends Dpages implements Module {
 			'title'          => 'Purchase Orders',
 			'summary'        => 'Purchase Orders Menu',
 			'parent'         => '/',
-			'dplus_function' => 'mpo' // TODO: Change to mpo
+			'dplus_function' => '' // TODO: Change to mpo
 		),
 		'po-list' => array(
 			'template'       => 'dplus-function',
 			'name'           => 'purchase-orders',
-			'title'          => 'Purchase Order List',
-			'summary'        => 'View Purchase Order List',
+			'title'          => 'Purchase Orders',
+			'summary'        => 'View Purchase Orders',
 			'parent'         => '/mpo/',
 			'dplus_function' => '',
 			'pw_template'    => 'purchase-orders'
@@ -80,7 +80,7 @@ class DpagesMpo extends Dpages implements Module {
 			'template'       => 'dplus-function',
 			'name'           => 'purchase-order',
 			'title'          => 'Purchase Order',
-			'summary'        => 'View a Purchase Order',
+			'summary'        => 'View Purchase Order',
 			'parent'         => '/mpo/',
 			'dplus_function' => '',
 			'pw_template'    => 'purchase-order-view'
@@ -221,7 +221,6 @@ class DpagesMpo extends Dpages implements Module {
 			'summary' => 'Installs and creates Dplus Online Purchase Order Pages',
 			'singular' => true,
 			'autoload' => true,
-			'requires' => array('DplusPwPages', 'Dpages'),
 		);
 	}
 }
