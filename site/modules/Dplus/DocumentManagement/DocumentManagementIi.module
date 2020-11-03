@@ -8,6 +8,8 @@ use SalesOrderQuery, SalesOrder;
 use SalesHistoryQuery, SalesHistory;
 use PurchaseOrderQuery, PurchaseOrder;
 
+include_once(__DIR__.'/DocumentManagement.module');
+
 /**
  * Document Management II
  *
