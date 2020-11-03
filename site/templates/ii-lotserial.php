@@ -1,7 +1,7 @@
 <?php
 	include_once('./ii-include.php');
 
-	if ($itemquery->count()) {
+	if ($lookup_ii->lookup_itm($itemID)) {
 		$page->show_breadcrumbs = false;
 		$page->body .= $config->twig->render('items/ii/bread-crumbs.twig', ['page' => $page, 'item' => $item]);
 		$page->title = "$itemID Lot / Serial";
@@ -18,7 +18,12 @@
 
 			$refreshurl = $page->get_itemlotserialURL($itemID);
 			$page->body .= $config->twig->render('items/ii/ii-links.twig', ['page' => $page, 'itemID' => $itemID, 'lastmodified' => $module_json->file_modified(session_id(), $page->jsoncode), 'refreshurl' => $refreshurl]);
-			$page->body .= $config->twig->render('items/ii/lotserial/lotserial.twig', ['page' => $page, 'json' => $json, 'module_json' => $module_json]);
+
+			if ($json['error']) {
+				$page->body .= $config->twig->render('util/alert.twig', ['type' => 'danger', 'title' => 'Error!', 'iconclass' => 'fa fa-warning fa-2x', 'message' => $json['errormsg']]);
+			} else {
+				$page->body .= $config->twig->render('items/ii/lotserial/lotserial.twig', ['page' => $page, 'json' => $json, 'module_json' => $module_json]);
+			}
 		} else {
 			if ($session->lotserialtry > 3) {
 				$page->headline = $page->title = "Lot Serial File could not be loaded";

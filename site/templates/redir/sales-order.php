@@ -79,15 +79,12 @@
 	**/
 
 	switch ($action) {
-		case 'get-order-edit':
-			$ordn = $input->get->text('ordn');
-			$custID = SalesOrderQuery::create()->get_custid($ordn);
-			$data = array("DBNAME=$dplusdb", "ORDRDET=$ordn", "CUSTID=$custID", "LOCK");
-			$session->loc = $pages->get('pw_template=sales-order-edit')->url."?ordn=$ordn";
-			break;
 		case 'edit-new-order':
 			$ordn = $user->get_lockedID();
 			$custID = SalesOrderQuery::create()->get_custid($ordn);
+			$editorder = OrdrhedQuery::create()->findOneBySessionidOrder(session_id(), $ordn);
+			$editorder->setShipdate(date('Ymd', strtotime('+1 day')));
+			$editorder->save();
 			$data = array("DBNAME=$dplusdb", "ORDRDET=$ordn", "CUSTID=$custID", "LOCK");
 			$session->loc = $pages->get('pw_template=sales-order-edit')->url."?ordn=$ordn";
 			break;
@@ -101,16 +98,16 @@
 			$editorder->setShipstate($input->$requestmethod->text('shipto_state'));
 			$editorder->setShipzip($input->$requestmethod->text('shipto_zip'));
 			$editorder->setContact($input->$requestmethod->text('contact'));
-			$editorder->setPhone(str_replace('-', '', $input->$requestmethod->text('phone')));
+			$editorder->setPhone($input->$requestmethod->text('phone'));
 			$editorder->setExtension($input->$requestmethod->text('phone_ext'));
-			$editorder->setFax(str_replace('-', '', $input->$requestmethod->text('fax')));
+			$editorder->setFax($input->$requestmethod->text('fax'));
 			$editorder->setEmail($input->$requestmethod->text('email'));
 			$editorder->setCustpo($input->$requestmethod->text('custpo'));
 			$editorder->setReleasenbr($input->$requestmethod->text('releasenumber'));
 			$editorder->setShipviacd($input->$requestmethod->text('shipvia'));
 			$editorder->setRqstDate($input->$requestmethod->text('date_requested'));
 			$editorder->setShipcom($input->$requestmethod->text('shipcomplete'));
-			$editorder->setPaymenttype($input->$requestmethod->text('paytype'));
+			$editorder->setTermcode($input->$requestmethod->text('termscode'));
 			$editorder->save();
 			$data = array("DBNAME=$dplusdb", 'SALESHEAD', "ORDERNO=$ordn", "CUSTID=$editorder->custid");
 
@@ -121,19 +118,6 @@
 				$session->loc = $pages->get('pw_template=sales-order-edit')->url."?ordn=$ordn";
 			}
 			break;
-		case 'quick-update-line':
-			$ordn = $input->$requestmethod->text('ordn');
-			$linenbr = $input->$requestmethod->int('linenbr');
-			$qty = $input->$requestmethod->int('qty');
-			$price = $input->$requestmethod->float('price');
-			$custID = SalesOrderQuery::create()->get_custid($ordn);
-			$editline = OrdrdetQuery::create()->findOneBySessionidOrder(session_id(), $ordn, $linenbr);
-			$editline->setQty($qty);
-			$editline->setPrice($price);
-			$editline->save();
-			$data = array("DBNAME=$dplusdb", 'SALEDET', "ORDERNO=$ordn", "LINENO=$linenbr", "CUSTID=$custID");
-			$session->loc = $pages->get('pw_template=sales-order-edit')->url."?ordn=$ordn";
-			break;
 		case 'add-item':
 			$ordn   = $input->$requestmethod->text('ordn');
 			$itemID = $input->$requestmethod->text('itemID');
@@ -141,6 +125,27 @@
 			$custID = SalesOrderQuery::create()->get_custid($ordn);
 			$data = array("DBNAME=$dplusdb", 'SALEDET', "ORDERNO=$ordn", "ITEMID=$itemID", "QTY=$qty", "CUSTID=$custID");
 			$session->loc = $pages->get('pw_template=sales-order-edit')->url."?ordn=$ordn";
+			break;
+		case 'add-popular-items':
+			$ordn = $input->$requestmethod->text('ordn');
+			$data = array("DBNAME=$dplusdb", 'ORDERADDMULTIPLE', "ORDERNO=$ordn");
+			$qtys = $input->$requestmethod->array('qty');
+			$itemIDs = $input->$requestmethod->array('itemID');
+
+			for ($i = 0; $i < sizeof($qtys); $i++) {
+				if (!empty($qtys[$i])) {
+					$itemID = str_pad($itemIDs[$i], 30, ' ');
+					$qty = $qtys[$i];
+					$data[] = "ITEMID={$itemID}QTY=$qty";
+				}
+			}
+
+			if ($input->$requestmethod->page) {
+				$url = new Purl\Url($input->$requestmethod->text('page'));
+				$session->loc = $url->getUrl();
+			} else {
+				$session->loc = $pages->get('pw_template=sales-order-edit')->url."?ordn=$ordn";
+			}
 			break;
 		case 'remove-line':
 			$ordn = $input->$requestmethod->text('ordn');
@@ -160,9 +165,9 @@
 	}
 
 	if (!empty($data)) {
-		write_dplusfile($data, $filename);
-		$http = new WireHttp();
-		$http->get("127.0.0.1/cgi-bin/".$config->cgis['default']."?fname=$filename");
+		$requestor = $modules->get('DplusRequest');
+		$requestor->write_dplusfile($data, $filename);
+		$requestor->cgi_request($config->cgis['default'], $filename);
 	}
 
 	if (!empty($session->get('loc')) && !$config->ajax) {

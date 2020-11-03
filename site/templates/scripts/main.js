@@ -81,10 +81,10 @@ $(function() {
 		e.preventDefault();
 		var button = $(this);
 		var uri = new URI(button.attr('href'));
-		swal({
+		swal2.fire({
 			title: 'Select Action Type',
 			input: 'select',
-			type: 'question',
+			icon: 'question',
 			confirmButtonClass: 'btn btn-sm btn-success',
 			cancelButtonClass: 'btn btn-sm btn-danger',
 			inputClass: 'form-control',
@@ -96,19 +96,18 @@ $(function() {
 			inputPlaceholder: 'Select an Action Type',
 			showCancelButton: true,
 			inputValidator: (value) => {
-				return new Promise(function (resolve, reject) {
+				return new Promise((resolve) => {
 					if (value.length) {
 						resolve();
 					} else {
-						reject('You need to select an Action Type')
+						resolve('You need to select an Action Type')
 					}
-				});
-
+				})
 			}
 		}).then(function (result) {
-			uri.addQuery('type', result);
+			uri.addQuery('type', result.value);
 			window.location.href = uri.toString();
-		}).catch(swal.noop);
+		});
 	});
 
 	$.notifyDefaults({
@@ -139,26 +138,49 @@ $(function() {
 
 	$('.phone-input').keyup(function() {
 		$(this).val(format_phone($(this).val()));
+		$(this).attr('minlength', '12');
 	});
 
 	$('a.delete_button').click(function(e){
 		e.preventDefault();
 		var link = $(this);
+		var title = "Confirm Deletion"
+		var text = 'Are you sure?';
 
-		swal({
-			title: "Confirm Deletion",
-			text: "Are you sure you want to delete?",
-			type: 'warning',
+		if (link.data('delete').length) {
+			text = 'Delete ' + link.data('delete') + '?';
+		}
+
+		swal2.fire({
+			title: title,
+			text: text,
+			icon: 'warning',
 			showCancelButton: true,
-			confirmButtonClass: 'btn btn-success',
-			cancelButtonClass: 'btn btn-danger',
-			buttonsStyling: false,
 			confirmButtonText: 'Yes'
-		}).then(function (result) {
-			if (result) {
+		}).then((result) => {
+			if (result.value) {
 				window.location.href = link.attr('href');
 			}
-		}).catch(swal.noop);
+		});
+	});
+
+	$('button.delete_button').click(function(e) {
+		e.preventDefault();
+		var button = $(this);
+		var action = $('.modal-form').attr("action");
+
+		swal2.fire({
+			title: "Confirm Deletion",
+			text: "Are you sure?",
+			icon: 'warning',
+			showCancelButton: true,
+			confirmButtonText: 'Yes'
+		}).then((confirm) => {
+			if (confirm.value) {
+				button.closest('form').submit();
+				window.location.href = action;
+			}
+		});
 	});
 });
 
@@ -171,7 +193,6 @@ $.fn.extend({
 		console.log('loading ' + href + " into " +  parent.returnelementdescription());
 		element.load(href, function() {
 			init_datepicker();
-			// init_timepicker();
 			callback();
 		});
 	},
@@ -214,8 +235,48 @@ $.fn.extend({
 	},
 	formDisableFields: function() {
 
+	},
+	resizeModal: function(size) {
+		if ($(this).hasClass('modal')){
+			var modal_dialog = $(this).find('.modal-dialog');
+			var modal_size = '';
+
+			var regex_modal = /(modal-)/;
+			var regex_modal_size = /(modal-)(sm|md|lg|xl)/;
+			var regex_sizes = /(sm|md|lg|xl)/;
+
+			if (regex_modal_size.test(size)) {
+				modal_size = size;
+			} else {
+				if (regex_sizes.test(size)) {
+
+				} else {
+					size = 'md';
+				}
+				modal_size = 'modal-' + size;
+			}
+
+			if (regex_modal_size.test(modal_dialog.attr('class'))) {
+				var attrclass = modal_dialog.attr('class');
+				attrclass = attrclass.replace(regex_modal_size, modal_size);
+				modal_dialog.attr('class', attrclass);
+			} else {
+				modal_dialog.addClass(modal_size);
+			}
+		}
+	},
+	clearValidation: function(){
+		var v = $(this).validate();
+		$('[name]',this).each(function(){
+			v.successList.push(this);
+			v.showErrors();
+		});
+		v.resetForm();
+		v.reset();
 	}
 });
+
+
 
 function toggle_nav() {
 	$(nav).toggle();
@@ -235,20 +296,20 @@ $('a.delete_button').click(function(e){
 	e.preventDefault();
 	var link = $(this);
 
-	swal({
+	swal2.fire({
 		title: "Confirm Deletion",
 		text: "Are you sure you want to delete?",
-		type: 'warning',
+		icon: 'warning',
 		showCancelButton: true,
 		confirmButtonClass: 'btn btn-success',
 		cancelButtonClass: 'btn btn-danger',
 		buttonsStyling: false,
 		confirmButtonText: 'Yes'
-	}).then(function (result) {
-		if (result) {
+	}).then((result) => {
+		if (result.value) {
 			window.location.href = link.attr('href');
 		}
-	}).catch(swal.noop);
+	});
 });
 
 /*==============================================================
@@ -298,9 +359,27 @@ String.prototype.capitalize = function() {
 	return this.charAt(0).toUpperCase() + this.slice(1)
 }
 
+String.prototype.urlencode = function() {
+	var string = this;
+	string = string.replace('!', '%21')
+	return encodeURIComponent(string);
+}
+
+
 Array.prototype.contains = function ( needle ) {
 	for (i in this) {
 		if (this[i] == needle) return true;
 	}
 	return false;
 }
+
+// CREATE DEFAULT SWEET ALERT
+const swal2 = Swal.mixin({
+	customClass: {
+		confirmButton: 'btn btn-success mr-3',
+		cancelButton: 'btn btn-danger',
+		inputClass: 'form-control',
+		selectClass: 'form-control',
+	},
+	buttonsStyling: false
+})

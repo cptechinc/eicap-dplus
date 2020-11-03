@@ -1,8 +1,19 @@
 $(function() {
 	var form_receive = $('#po-item-receive-form');
 	var input_qty    = form_receive.find('input[name=qty]');
-	var input_bin    = form_receive.find('input[name=binID]');
+	var input_itemID    = form_receive.find('input[name=itemID]');
 	var input_lotref = form_receive.find('input[name=lotserialref]');
+
+	var form_itemsearch = $('#item-search-form');
+
+	$("body").on("click", "#bins-modal .choose-bin", function(e) {
+		e.preventDefault();
+		var button = $(this);
+		var binID = button.data('bin');
+		var input_bin = $('input[name=binID]');
+		input_bin.val(binID);
+		button.closest('.modal').modal('hide');
+	});
 
 	form_receive.validate({
 		submitHandler : function(form) {
@@ -10,7 +21,7 @@ $(function() {
 			var valid_itemid       = validate_itemid();
 			var valid_qty          = validate_qty();
 			var valid_lotserialref = validate_lotserialref();
-			var valid_bin          = validate_bin();
+			var valid_bin          = validate_bin(form_receive);
 			var valid_qty_exceeds  = validate_qty_exceeds();
 
 			if (valid_itemid.error) {
@@ -24,19 +35,53 @@ $(function() {
 			}
 
 			if (valid_form.error) {
+				swal2.fire({
+					icon: 'error',
+					title: valid_form.title,
+					text: valid_form.msg,
+					html: valid_form.html
+				});
+			} else if (valid_qty_exceeds.error) {
+				swal2.fire({
+					icon: 'warning',
+					title: valid_qty_exceeds.title,
+					text: valid_qty_exceeds.msg,
+					html: valid_qty_exceeds.html
+				});
+			} else {
+				form.submit();
+			}
+		}
+	});
+
+	form_itemsearch.validate({
+		errorClass: "is-invalid",
+		rules: {
+			scan: 'required'
+		},
+		messages: {
+			scan: "Please scan an itemID, Lot/Serial #, etc.",
+		},
+		submitHandler : function(form) {
+			var valid_form = new SwalError(false, '', '', false);
+
+			if (form_itemsearch.data('forcebin') == true) {
+				var valid_bin  = validate_bin(form_itemsearch);
+			} else {
+				var valid_bin = valid_form;
+			}
+
+			if (valid_bin.error) {
+				valid_form = valid_bin;
+			}
+
+			if (valid_form.error) {
 				swal({
 					type: 'error',
 					title: valid_form.title,
 					text: valid_form.msg,
 					html: valid_form.html
-				}).catch(swal.noop);
-			} else if (valid_qty_exceeds.error) {
-				swal({
-					type: 'warning',
-					title: valid_qty_exceeds.title,
-					text: valid_qty_exceeds.msg,
-					html: valid_qty_exceeds.html
-				}).catch(swal.noop);
+				});
 			} else {
 				form.submit();
 			}
@@ -63,8 +108,9 @@ $(function() {
 		var title = '';
 		var msg = '';
 		var html = false;
+		var itemID = input_itemID.val();
 
-		if (input_lotref.val() == '') {
+		if (input_lotref.val() == '' && items[itemID]['type'] != 'N' && items.length) {
 			error = true;
 			title = 'Error';
 			msg   = 'Please enter a Lot Serial Reference';
@@ -79,7 +125,7 @@ $(function() {
 		var msg = '';
 		var html = false;
 
-		if (input_qty.val() == '0.00') {
+		if (input_qty.val() == '0.00' || input_qty.val() == 0.00) {
 			error = true;
 			title = 'Error';
 			msg   = 'Please enter a Quantity greater than 0';
@@ -116,16 +162,14 @@ $(function() {
 		return new SwalError(error, title, msg, html);
 	}
 
-
-	function validate_bin() {
+	function validate_bin(form) {
 		var error = false;
 		var title = '';
 		var msg = '';
 		var html = false;
+		var input_bin     = form.find('input[name=binID]');
 		var lowercase_bin = input_bin.val();
 		input_bin.val(lowercase_bin.toUpperCase());
-
-		console.log(warehouse.bins.contains(input_bin.val()));
 
 		if (input_bin.val() == '') {
 			error = true;

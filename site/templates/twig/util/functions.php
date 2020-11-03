@@ -1,6 +1,7 @@
 <?php
 	use Twig\TwigFilter;
 	use Purl\Url;
+	use ProcessWire\Regexer;
 
 	$convertdate = new Twig_Function('convertdate', function ($date, $format = 'm/d/Y') {
 		$date = date($format, strtotime($date));
@@ -15,6 +16,11 @@
 
 	$filter = new TwigFilter('currency', function ($money) {
 		return number_format($money, 2, '.', ",");
+	});
+	$config->twig->addFilter($filter);
+
+	$filter = new TwigFilter('round', function ($number) {
+		return number_format($number, 4, '.', ",");
 	});
 	$config->twig->addFilter($filter);
 
@@ -34,8 +40,15 @@
 	});
 	$config->twig->addFilter($filter);
 
-	$filter = new Twig_Filter('attrJS', function ($string) {
-		return "js-$string";
+	$filter = new Twig_Filter('attrJS', function ($string, $jsprepend = true) {
+		$replace = array(
+			' ' => '+',
+			'=' => 'eq',
+			'%' => 'per',
+			'+' => 'plus'
+		);
+		$string = str_replace(array_keys($replace), array_values($replace), $string);
+		return $jsprepend ? "js-$string" : $string;
 	});
 	$config->twig->addFilter($filter);
 
@@ -45,8 +58,20 @@
 	$config->twig->addFilter($filter);
 
 	$filter = new Twig_Filter('phone_us', function ($phone) {
-		$numbers_only = preg_replace("/[^\d]/", "", $phone);
-		return preg_replace("/^1?(\d{3})(\d{3})(\d{4})$/", "$1-$2-$3", $numbers_only);
+		$regexer = new Regexer;
+		return $regexer->phone_us_10($phone);
+	});
+	$config->twig->addFilter($filter);
+
+	$filter = new Twig_Filter('phone_us_ext', function ($phone) {
+		$regexer = new Regexer;
+		return $regexer->phone_us_ext($phone);
+	});
+	$config->twig->addFilter($filter);
+
+	$filter = new Twig_Filter('phone_us_x', function ($phone) {
+		$regexer = new Regexer;
+		return $regexer->phone_us_x($phone);
 	});
 	$config->twig->addFilter($filter);
 
@@ -87,3 +112,39 @@
 		return array_keys($array);
 	});
 	$config->twig->addFunction($array_keys);
+
+	$filter = new Twig_Filter('shorten', function ($string, $length = 0, $append = '') {
+		$newstring = substr($string, 0, $length);
+		$newstring .= strlen($string) > $length ? $append : '';
+		return $newstring;
+	});
+	$config->twig->addFilter($filter);
+
+	$filter = new Twig_Filter('dynamicproperty', function ($object, $property) {
+		return $object->$property;
+	});
+	$config->twig->addFilter($filter);
+
+	$filter = new Twig_Filter('urlencode', function ($string) {
+		return urlencode($string);
+	});
+	$config->twig->addFilter($filter);
+
+	$filter = new Twig_Filter('objproperty', function ($object, $property) {
+		return $object->$property;
+	});
+	$config->twig->addFilter($filter);
+
+	$filter = new Twig_Filter('stripslashes', function ($str) {
+		return stripslashes($str);
+	});
+	$config->twig->addFilter($filter);
+
+	$filter = new Twig_Filter('htmlattributes', function ($array) {
+		$attr = '';
+		foreach ($array as $key => $value) {
+			$attr .= " $key=$value";
+		}
+		return $attr;
+	});
+	$config->twig->addFilter($filter);

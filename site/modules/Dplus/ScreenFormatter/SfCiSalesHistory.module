@@ -1,6 +1,5 @@
 <?php namespace ProcessWire;
 
-
 /**
  * Class for formatting the CI Sales History Screen
  */

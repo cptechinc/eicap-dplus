@@ -1,6 +1,9 @@
 <?php
 	use Propel\Runtime\ActiveQuery\Criteria;
 
+	$rm = strtolower($input->requestMethod());
+	$values = $input->$rm;
+
 	$html = $modules->get('HtmlWriter');
 
 	$modules->get('DpagesMwm')->init_picking();
@@ -13,65 +16,98 @@
 
 	// CHECK If there are details to pick
 	$lines_query = PickSalesOrderDetailQuery::create()->filterBySessionidOrder(session_id(), $ordn);
+	$order = SalesOrderQuery::create()->findOneByOrdernumber($ordn);
 
 	if ($whsesession->is_orderfinished()) {
 		$page->body .= $config->twig->render('warehouse/picking/finished-order.twig', ['page' => $page, 'ordn' => $ordn]);
 	} elseif ($lines_query->count() > 0) {
-		if ($input->requestMethod('POST')) {
-			$pickingsession->handle_barcodeaction($input);
-			$session->redirect($page->fullURL->getUrl());
+		if ($values->action) {
+			$pickingsession->handle_action($input);
+			$session->redirect($page->fullURL->getUrl(), $http301 = false);
 		}
 
-		if ($input->get->scan) { // SCAN MEANS THERE ARE ITEMS TRYING TO BE ADDED
+		if ($session->pickingerror) {
+			$page->body .= $html->div('class=mb-3', $config->twig->render('util/alert.twig', ['type' => 'danger', 'title' => 'Error!', 'iconclass' => 'fa fa-warning fa-2x', 'message' => "$session->pickingerror"]));
+			$session->remove('pickingerror');
+		}
+
+		if ($whsesession->has_warning()) {
+			$page->body .= $html->div('class=mb-3', $config->twig->render('util/alert.twig', ['type' => 'warning', 'title' => 'Warning!', 'iconclass' => 'fa fa-warning fa-2x', 'message' => $whsesession->status]));
+		} elseif ($whsesession->has_message()) {
+			$page->body .= $html->div('class=mb-3', $config->twig->render('util/alert.twig', ['type' => 'danger', 'title' => 'Error!', 'iconclass' => 'fa fa-warning fa-2x', 'message' => $whsesession->status]));
+		}
+
+		$page->body .= $config->twig->render('warehouse/picking/order-info.twig', ['page' => $page, 'order' => $order, 'whsesession' => $whsesession]);
+
+		if ($input->get->scan) {
 			$scan = $input->get->text('scan');
+			$page->scan = $scan;
+			$query_phys = $pickingsession->inventory->get_inventory_scan_query($scan, $includepack = false);
 
 			if ($session->verify_whseitempick_items) {
-				$query_pickeditems = WhseitempickQuery::create()->filterByOrdn($ordn)->filterBySessionid(session_id());
-				$query_pickeditems->filterByBarcode($scan);
-				$query_pickeditems->filterByRecordnumber($session->verify_whseitempick_items);
+				$query_pickeditems = $pickingsession->get_whseitempick_query(['barcode' => $scan, 'recordnumber' => $session->verify_whseitempick_items]);
 				$query_pickeditems->find();
 
 				if ($query_pickeditems->count()) {
-					$page->body .= $config->twig->render('warehouse/picking/unguided/scan/verify-whseitempick-lotserials.twig', ['page' => $page, 'scan' => $scan, 'items' => $query_pickeditems->find()]);
-					$page->js .= $config->twig->render('warehouse/picking/unguided/scan/verify-whseitempick-items.js.twig', ['page' => $page, 'items' => $query_pickeditems->find()]);
+					$page->body .= $config->twig->render('warehouse/picking/unguided/scan/verify-whseitempick-lotserials.twig', ['page' => $page, 'scan' => $scan, 'm_picking' => $pickingsession, 'items' => $query_pickeditems->find()]);
 				} else {
-					$session->remove('verify_whseitempickitems');
+					$session->remove('verify_whseitempick_items');
+					$page->body .= $html->div('class=mb-3');
 					$page->body .= $config->twig->render('warehouse/picking/unguided/scan/scan-form.twig', ['page' => $page]);
 				}
-				$session->remove('verify_whseitempick_items');
 			} else {
-				$query_phys = WhseitemphysicalcountQuery::create();
-				$query_phys->filterBySessionid(session_id());
-				$query_phys->filterByScan($scan);
-				$query_phys->filterByBin('PACK', Criteria::ALT_NOT_EQUAL);
-				$query_phys->find();
-
 				if ($query_phys->count() == 1) {
-					$item = $query_phys->findOne();
+					$inventoryitem = $query_phys->findOne();
 
-					if ($item->has_error()) {
-						$page->body .= $html->div('class=mb-3', $config->twig->render('util/alert.twig', ['type' => 'danger', 'title' => "Error searching '$scan'", 'iconclass' => 'fa fa-warning fa-2x', 'message' => $item->get_error()]));
+					if ($inventoryitem->has_error()) {
+						$page->body .= $html->div('class=mb-3', $config->twig->render('util/alert.twig', ['type' => 'danger', 'title' => "Error searching '$scan'", 'iconclass' => 'fa fa-warning fa-2x', 'message' => $inventoryitem->get_error()]));
+						$page->body .= $html->h3('', 'Scan item to add');
 						$page->body .= $config->twig->render('warehouse/picking/unguided/scan/scan-form.twig', ['page' => $page]);
-					} else {
-						$page->body .= $config->twig->render('warehouse/picking/unguided/scan/add-scanned-item-form.twig', ['page' => $page, 'item' => $item]);
+					}  else {
+						if ($pickingsession->items->is_itemid_onorder($inventoryitem->itemid)) {
+							//$item = $modules->get('LoadItem')->get_item($inventoryitem->itemid);
+							$orderitem = $pickingsession->items->get_picksalesorderdetail_itemid($inventoryitem->itemid);
+							$page->body .= $html->h3('', 'Enter Item Details');
+							$page->body .= $config->twig->render('warehouse/picking/unguided/scan/add-scanned-item-form.twig', ['page' => $page, 'item' => $inventoryitem, 'orderitem' => $orderitem, 'scan' => $scan]);
+							$page->js   .= $config->twig->render('warehouse/picking/unguided/scan/scan.js.twig', ['page' => $page]);
+						} else {
+							$page->body .= $html->div('class=mb-3', $config->twig->render('util/alert.twig', ['type' => 'danger', 'title' => 'Item Not on Order', 'iconclass' => 'fa fa-warning fa-2x', 'message' => "Item $inventoryitem->itemid is not on this order"]));
+							$page->body .= $config->twig->render('warehouse/picking/unguided/scan/scan-form.twig', ['page' => $page]);
+						}
 					}
-
 				} elseif ($query_phys->count() == 0) {
 					$page->body .= $html->div('class=mb-3', $config->twig->render('util/alert.twig', ['type' => 'danger', 'title' => '0 items found', 'iconclass' => 'fa fa-warning fa-2x', 'message' => "No items found for '$scan'"]));
 					$page->body .= $config->twig->render('warehouse/picking/unguided/scan/scan-form.twig', ['page' => $page]);
 				} else {
 					$physicalitems = $query_phys->groupBy('itemid')->find();
-					$page->body .= $config->twig->render('warehouse/picking/unguided/scan/select-item-list.twig', ['page' => $page, 'items' => $physicalitems]);
+					$page->body .= $html->h3('', 'Select Items to Pick');
+					$page->body .= $config->twig->render('warehouse/picking/unguided/scan/select-item-list.twig', ['page' => $page, 'items' => $physicalitems, 'm_picking' => $pickingsession]);
+					$page->js   .= $config->twig->render('warehouse/picking/unguided/scan/select-item-list.js.twig', []);
 				}
 			}
+			$page->body .= $html->div('class=mb-3');
 		} else {
+			$page->body .= $html->h3('', 'Scan item to pick');
 			$page->body .= $config->twig->render('warehouse/picking/unguided/scan/scan-form.twig', ['page' => $page]);
 		}
 
-		$page->body .= $config->twig->render('warehouse/picking/unguided/line-items.twig', ['page' => $page, 'lineitems' => $lines_query->find()]);
+		if ($pickingsession->items->has_sublines()) {
+			$page->body .= $config->twig->render('warehouse/picking/unguided/order-items-sublined.twig', ['page' => $page, 'lineitems' => $lines_query->find() , 'm_picking' => $pickingsession]);
+		} else {
+			if ($config->twigloader->exists("warehouse/picking/unguided/$config->company/order-items.twig")) {
+				$page->body .= $config->twig->render("warehouse/picking/unguided/$config->company/order-items.twig", ['page' => $page, 'lineitems' => $lines_query->find(), 'm_picking' => $pickingsession]);
+			} else {
+				$page->body .= $config->twig->render('warehouse/picking/unguided/order-items.twig', ['page' => $page, 'lineitems' => $lines_query->find(), 'm_picking' => $pickingsession]);
+			}
+		}
+
+		$page->body .= $html->div('class=mb-3');
+		if (!$input->get->scan || $query_phys->count() == 1) {
+			$page->body .= $config->twig->render('warehouse/picking/unguided/order-actions.twig', ['page' => $page]);
+		}
 
 		if ($session->removefromline) {
-			$page->js .= $config->twig->render('warehouse/picking/remove-line.js.twig', ['linenbr' => $session->removefromline]);
+			$page->js .= $config->twig->render('warehouse/picking/unguided/remove-line.js.twig', ['linenbr' => $session->removefromline]);
 			$session->remove('removefromline');
 		}
 	} else { // NO ITEMS TO PICK
@@ -79,9 +115,9 @@
 		if ($whsesession->is_orderfinished() || $whsesession->is_orderexited()) {
 			WhseItempickQuery::create()->filterByOrdn($ordn)->filterBySessionid(session_id())->delete();
 		}
-		//==$http->get("127.0.0.1".$page->parent->child('template=redir')->url."?action=start-pick-unguided&sessionID=".session_id());
+
 		$page->formurl = $page->parent->child('template=redir')->url;
-		$page->body = $config->twig->render('warehouse/picking/status.twig', ['page' => $page, 'whsesession' => $whsesession]);
+		$page->body .= $config->twig->render('warehouse/picking/status.twig', ['page' => $page, 'whsesession' => $whsesession]);
 		$page->body .= '<div class="form-group"></div>';
 		$page->body .= $config->twig->render('warehouse/picking/sales-order-form.twig', ['page' => $page]);
 	}

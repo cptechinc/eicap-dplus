@@ -25,19 +25,9 @@ class DpagesMci extends Dpages implements Module {
 	);
 
 	const TEMPLATES = array(
-		'dplus-menu' => array(
-			'name'   => 'dplus-menu',
-			'fields' => array('dplus_function', 'summary'),
-			'paginated' => false
-		),
-		'dplus-function' => array(
-			'name'   => 'dplus-menu',
-			'fields' => array('dplus_function', 'pw_template', 'summary'),
-			'paginated' => true
-		),
 		'ci-function' => array(
 			'name'   => 'dplus-menu',
-			'fields' => array('title', 'dplus_function', 'pw_template', 'jsoncode', 'is_formattable', 'summary'),
+			'fields' => array('title', 'summary', 'dplus_function', 'dplus_permission', 'pw_template', 'jsoncode', 'is_formattable'),
 			'paginated' => true
 		),
 		'ci-customer' => array(
@@ -111,7 +101,19 @@ class DpagesMci extends Dpages implements Module {
 		'ci-customer-phonebook' => array(
 			'name'   => 'ci-customer-phonebook',
 			'fields' => array(),
-		)
+		),
+		'ci-activity' => array(
+			'name'   => 'ci-activity',
+			'fields' => array(),
+		),
+		'mci-lookup' => array(
+			'name'   => 'mci-lookup',
+			'fields' => array(),
+		),
+		'ci-json' => array(
+			'name'   => 'ci-json',
+			'fields' => array(),
+		),
 	);
 
 	const PAGES = array(
@@ -123,6 +125,32 @@ class DpagesMci extends Dpages implements Module {
 			'parent'         => '/',
 			'dplus_function' => 'mci'
 		),
+		'ci-json' => array(
+			'template'       => 'dplus-json',
+			'name'           => 'ci-json',
+			'title'          => 'CI JSON',
+			'summary'        => 'JSON API for CI',
+			'parent'         => '/mci/',
+			'dplus_function' => '',
+			'pw_template'    => 'ci-json'
+		),
+		'ci-admin' => array(
+			'template'       => 'dplus-menu',
+			'name'           => 'admin',
+			'title'          => 'CI Administration',
+			'summary'        => 'Customer Information Administration',
+			'parent'         => '/mci/',
+			'dplus_function' => 'ciadmn'
+		),
+		'mci-lookup' => array(
+			'template'       => 'dplus-function',
+			'name'           => 'lookup',
+			'title'          => 'Customer Lookup',
+			'summary'        => 'Lookup Customers',
+			'parent'         => '/mci/',
+			'dplus_function' => '',
+			'pw_template'    => 'mci-lookup'
+		),
 		'ci' => array(
 			'template'       => 'dplus-function',
 			'name'           => 'ci',
@@ -133,13 +161,14 @@ class DpagesMci extends Dpages implements Module {
 			'pw_template'    => 'ci-customer'
 		),
 		'ci-phonebook' => array(
-			'template'       => 'dplus-function',
-			'name'           => 'phonebook',
-			'title'          => 'Phonebook',
-			'summary'        => 'Search through customers by Phonebook',
-			'parent'         => '/mci/',
-			'dplus_function' => 'mci',
-			'pw_template'    => 'ci-phonebook'
+			'template'         => 'dplus-function',
+			'name'             => 'phonebook',
+			'title'            => 'Phonebook',
+			'summary'          => 'Search through customers by Phonebook',
+			'parent'           => '/mci/',
+			'dplus_function'   => '',
+			'dplus_permission' => 'mci',
+			'pw_template'      => 'ci-phonebook'
 		),
 		'ci-customer-phonebook' => array(
 			'template'       => 'dplus-function',
@@ -223,7 +252,7 @@ class DpagesMci extends Dpages implements Module {
 		'ci-customer-po' => array(
 			'template'       => 'ci-function',
 			'name'           => 'customer-po',
-			'title'          => 'Purchase Orders',
+			'title'          => 'Cust POs',
 			'summary'        => 'View Customer PO',
 			'parent'         => '/mci/ci/',
 			'dplus_function' => 'ci-cpo',
@@ -309,6 +338,16 @@ class DpagesMci extends Dpages implements Module {
 			'dplus_function' => 'ci-doc',
 			'pw_template'    => 'ci-documents',
 			'jsoncode'       => 'ci-documents'
+		),
+		'ci-activity' => array(
+			'template'         => 'ci-function',
+			'name'             => 'activity',
+			'title'            => 'Activity',
+			'summary'          => 'View Customer Activity',
+			'parent'           => '/mci/ci/',
+			'dplus_permission' => '',
+			'pw_template'      => 'ci-activity',
+			'jsoncode'         => ''
 		),
 	);
 
@@ -608,6 +647,9 @@ class DpagesMci extends Dpages implements Module {
 		});
 	}
 
+/* =============================================================
+	URL Functions
+============================================================= */
 	/**
 	 * Returns URL to CI Customer Page
 	 * @param  string $custID Customer ID
@@ -645,13 +687,17 @@ class DpagesMci extends Dpages implements Module {
 		return $p->children('dplus_function='.implode('|', $filtered_functions));
 	}
 
+/* =============================================================
+	ProcessWire Module Functions
+============================================================= */
 	public static function getModuleInfo() {
 		return array(
-			'title' => 'Dplus Online Customer Pages',
+			'title' => 'Dplus MCI Pages',
 			'version' => 101,
-			'summary' => 'Installs and creates Dplus Online Customer Pages',
+			'summary' => 'Installs and creates Dplus MCI Pages',
 			'singular' => true,
 			'autoload' => true,
+			'requires' => array('DplusPwPages', 'Dpages'),
 		);
 	}
 }

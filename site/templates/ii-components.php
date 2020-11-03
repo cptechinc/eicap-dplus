@@ -2,9 +2,7 @@
 	include_once('./ii-include.php');
 	$config_ii = $modules->get('ConfigsIi');
 
-	use ItemsearchQuery, Itemsearch;
-
-	if ($itemquery->count()) {
+	if ($lookup_ii->lookup_itm($itemID)) {
 		$page->show_breadcrumbs = false;
 		$page->body .= $config->twig->render('items/ii/bread-crumbs.twig', ['page' => $page, 'item' => $item]);
 		$page->title = "$itemID Components";
@@ -31,7 +29,7 @@
 				$page->body .= $config->twig->render('items/ii/ii-links.twig', ['page' => $page, 'itemID' => $itemID, 'lastmodified' => $module_json->file_modified(session_id(), $page->jsoncode), 'refreshurl' => $refreshurl]);
 
 				if ($config_ii->option_components == 'kit') {
-					$query_kit = KitsQuery::create();
+					$query_kit = KitQuery::create();
 					$query_kit->filterByItemid($itemID);
 
 					if ($query_kit->count()) {
@@ -39,11 +37,20 @@
 						$page->body .= $config->twig->render('items/ii/components/kit-breakdown.twig', ['page' => $page, 'itemID' => $itemID,  'items' => $kit_items]);
 					}
 
-					$page->body .= $config->twig->render('items/ii/components/kit-screen.twig', ['page' => $page, 'json' => $json, 'module_json' => $module_json, 'itemID' => $itemID]);
+					if ($json['error']) {
+						$page->body .= $config->twig->render('util/alert.twig', ['type' => 'danger', 'title' => 'Error!', 'iconclass' => 'fa fa-warning fa-2x', 'message' => $json['errormsg']]);
+					} else {
+						$page->body .= $config->twig->render('items/ii/components/kit-screen.twig', ['page' => $page, 'json' => $json, 'module_json' => $module_json, 'itemID' => $itemID]);
+					}
 				} elseif ($config_ii->option_components == 'bom') {
 					$bomtype = $input->get->text('bomtype');
 					$page->jsoncode = "$page->jsoncode-$config_ii->option_components-$bomtype";
-					$page->body .= $config->twig->render("items/ii/components/bom-$bomtype-screen.twig", ['page' => $page, 'json' => $json, 'module_json' => $module_json, 'itemID' => $itemID]);
+
+					if ($json['error']) {
+						$page->body .= $config->twig->render('util/alert.twig', ['type' => 'danger', 'title' => 'Error!', 'iconclass' => 'fa fa-warning fa-2x', 'message' => $json['errormsg']]);
+					} else {
+						$page->body .= $config->twig->render("items/ii/components/bom-$bomtype-screen.twig", ['page' => $page, 'json' => $json, 'module_json' => $module_json, 'itemID' => $itemID]);
+					}
 				}
 			} else {
 				if ($session->activitytry > 3) {

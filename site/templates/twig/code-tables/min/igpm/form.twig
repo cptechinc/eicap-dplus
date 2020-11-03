@@ -1,30 +1,31 @@
-<form action="{{ page.url }}" method="POST" id="code-edit-form">
+{# igpm is an instance of InvPriceCode #}
+{# data-code is for verifying edit vs new #}
+<form action="{{ page.url }}" method="POST" id="code-edit-form" data-code="">
 	<input type="hidden" name="table" value="igpm">
+	<input type="hidden" name="serialized" value="" disabled>
+
 
 	<div class="form-group">
 		<label for="code">Code</label>
-		<input type="text" name="code" class="form-control" value="" id="code">
+		<input type="text" name="code" class="form-control" maxlength="{{ max_length_code }}" value="" id="code">
 	</div>
 
 	<div class="form-group">
 		<label for="description">Description</label>
-		<input type="text" name="description" class="form-control" value="" id="description">
+		<input type="text" name="description" class="form-control" maxlength="20" value="" id="description">
 	</div>
 
 	{% if config_so.is_request_program() %}
 		<div class="form-group">
-			<label for="sales_program">Sales Program ?</label>
-			<select name="sales_program" class="form-control" id="sales_program">
-				<option value="Y">Yes</option>
-				<option value="N">No</option>
-			</select>
-		</div>
+		    <label for="sales_program">Sales Program</label>
+		    {% include 'util/select.twig' with {'name': 'sales_program', 'hideblankoption' : 'true', 'id': 'sales_program', 'options': {'Y': 'Yes', 'N': 'No'}} %}
+	    </div>
 	{% endif %}
 
 	<div class="modal-footer">
-		<button type="submit" class="btn btn-success">
+		<button type="submit" class="btn btn-success form_button">
 			<i class="fa fa-floppy-o" aria-hidden="true"></i> Save
 		</button>
-		<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+		<button type="button" class="btn btn-warning" data-dismiss="modal">Close</button>
 	</div>
 </form>

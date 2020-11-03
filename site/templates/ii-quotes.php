@@ -1,7 +1,7 @@
 <?php
 	include_once('./ii-include.php');
 
-	if ($itemquery->count()) {
+	if ($lookup_ii->lookup_itm($itemID)) {
 		$page->show_breadcrumbs = false;
 		$page->body .= $config->twig->render('items/ii/bread-crumbs.twig', ['page' => $page, 'item' => $item]);
 		$page->title = "$itemID Quotes";
@@ -16,12 +16,17 @@
 			}
 			$session->quotestry = 0;
 			$module_formatter = $modules->get('SfIiQuotes');
-			$module_formatter->init_formatter();
 			$refreshurl = $page->get_itemquotesURL($itemID);
-			$document_management = $modules->get('DocumentManagement');
-
 			$page->body .= $config->twig->render('items/ii/ii-links.twig', ['page' => $page, 'itemID' => $itemID, 'lastmodified' => $module_json->file_modified(session_id(), $page->jsoncode), 'refreshurl' => $refreshurl]);
-			$page->body .= $config->twig->render('items/ii/quotes/quotes.twig', ['page' => $page, 'itemID' => $itemID, 'json' => $json, 'module_formatter' => $module_formatter, 'blueprint' => $module_formatter->get_tableblueprint(), 'document_management' => $document_management]);
+
+			if ($json['error']) {
+				$page->body .= $config->twig->render('util/alert.twig', ['type' => 'danger', 'title' => 'Error!', 'iconclass' => 'fa fa-warning fa-2x', 'message' => $json['errormsg']]);
+			} else {
+				$module_formatter->init_formatter();
+				$refreshurl = $page->get_itemquotesURL($itemID);
+				$docm = $modules->get('DocumentManagementQt');
+				$page->body .= $config->twig->render('items/ii/quotes/quotes.twig', ['page' => $page, 'itemID' => $itemID, 'json' => $json, 'module_formatter' => $module_formatter, 'blueprint' => $module_formatter->get_tableblueprint(), 'docm' => $docm]);
+			}
 		} else {
 			if ($session->quotestry > 3) {
 				$page->headline = $page->title = "Quotes File could not be loaded";

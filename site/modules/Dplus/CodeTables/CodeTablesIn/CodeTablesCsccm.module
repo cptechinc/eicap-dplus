@@ -1,6 +1,6 @@
 <?php namespace ProcessWire;
 
-include_once(__DIR__.'../CodeTablesResponse.php');
+include_once(__DIR__.'/../CodeTablesResponse.php');
 
 use Purl\Url;
 
@@ -29,6 +29,16 @@ class CodeTablesCsccm extends WireData implements Module {
 	public function get_codes() {
 		$q = $this->get_query();
 		return $q->find();
+	}
+
+	/**
+	 * Return the IDs for the Product Line Codes
+	 * @return array
+	 */
+	public function get_codes_ids() {
+		$q = $this->get_query();
+		$q->select(CustomerStockingCell::get_aliasproperty('id'));
+		return $q->find()->toArray();
 	}
 
 	/**

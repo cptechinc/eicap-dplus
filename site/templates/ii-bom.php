@@ -2,9 +2,7 @@
 	include_once('./ii-include.php');
 	$config_ii = $modules->get('ConfigsIi');
 
-	use ItemsearchQuery, Itemsearch;
-
-	if ($itemquery->count()) {
+	if ($lookup_ii->lookup_itm($itemID)) {
 		$page->title = "$itemID BOM";
 		$page->show_breadcrumbs = false;
 		$page->body .= $config->twig->render('items/ii/bread-crumbs.twig', ['page' => $page, 'item' => $item]);
@@ -28,7 +26,12 @@
 
 				$bomtype = $input->get->text('bomtype');
 				$page->jsoncode = "$page->jsoncode-$config_ii->option_components-$bomtype";
-				$page->body .= $config->twig->render("items/ii/components/bom-$bomtype-screen.twig", ['page' => $page, 'json' => $json, 'module_json' => $module_json, 'itemID' => $itemID]);
+
+				if ($json['error']) {
+					$page->body .= $config->twig->render('util/alert.twig', ['type' => 'danger', 'title' => 'Error!', 'iconclass' => 'fa fa-warning fa-2x', 'message' => $json['errormsg']]);
+				} else {
+					$page->body .= $config->twig->render("items/ii/components/bom-$bomtype-screen.twig", ['page' => $page, 'json' => $json, 'module_json' => $module_json, 'itemID' => $itemID]);
+				}
 			} else {
 				if ($session->activitytry > 3) {
 					$page->headline = $page->title = "BOM File could not be loaded";

@@ -8,12 +8,11 @@
 		if ($q_whse->count()) {
 			include('./dplus-function.php');
 		} else {
-			$page->body = $config->twig->render('util/alert.twig', ['type' => 'danger', 'title' => "Warehouse Not Found", 'iconclass' => 'fa fa-warning fa-2x', 'message' => "Warehouse '$whsesession->whseid' is not available "]);
+			$page->body = $config->twig->render('util/alert.twig', ['type' => 'danger', 'title' => "Warehouse not Found", 'iconclass' => 'fa fa-warning fa-2x', 'message' => "Warehouse '$whsesession->whseid' not available "]);
 			include('./basic-page.php');
 		}
 	} else {
-		$http = new WireHttp();
-		$url = $pages->get('template=warehouse-menu, dplus_function=wm')->child('template=redir')->url."?action=login&sessionID=".session_id();
-		$http->get("127.0.0.1$url");
-		$session->redirect($page->url);
+		$loginm = $modules->get('DplusUser');
+		$loginm->request_login_whse($user->loginid);
+		$session->redirect($page->url, $http301 = false);
 	}

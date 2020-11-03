@@ -1,6 +1,62 @@
 <?php namespace ProcessWire;
 
 class Qnotes extends WireData implements Module {
+	/**
+	 * Returns Lines Broken down by line limits
+	 * @param  string $note   Text Area Note
+	 * @param  int    $length Line Length Limit
+	 * @return array
+	 */
+	public function note_lines($note, int $length = 0) {
+		$lines = array();
+
+		if ($length) {
+			$wrapped = wordwrap($note, $length, PHP_EOL, $cut = true);
+			$note_lines = explode(PHP_EOL, $wrapped);
+		} else {
+			$note_lines = explode(PHP_EOL, $note);
+		}
+		return $note_lines;
+	}
+
+	/**
+	 * Return Data needed for Dplus to UPDATE the Customer Type Notes
+	 * @param  string $notetype Note Type @see WarehouseNote::TYPES
+	 * @param  string $key2     Key 2
+	 * @param  string $form     Form e.g YNNN
+	 * @return array
+	 */
+	public function write_dplus_data($notetype, $key2, $form) {
+		$dplusdb = $this->wire('modules')->get('DplusDatabase')->db_name;
+		return array("DBNAME=$dplusdb", 'UPDATEQNOTE', "TYPE=$notetype", "KEY2=$key2", "FORM=$form");
+	}
+
+	/**
+	 * Sends Update Request for Qnote Type
+	 * @param  string $notetype Note Type
+	 * @param  string $key2     Key 2
+	 * @param  string $form     Form e.g YNNN
+	 * @return void
+	 */
+	public function update_dplus_cobol($notetype, $key2, $form) {
+		$config = $this->wire('config');
+		$dplusdb = $this->wire('modules')->get('DplusDatabase')->db_name;
+		$data = $this->write_dplus_data($notetype, $key2, $form);
+		$requestor = $this->wire('modules')->get('DplusRequest');
+		$requestor->write_dplusfile($data, session_id());
+		$requestor->cgi_request($config->cgis['database'], session_id());
+	}
+
+	public function update() {
+		$info = self::getModuleInfo();
+		$modules = $this->wire('modules');
+		$modules->refresh();
+
+		foreach ($info['installs'] as $module_name) {
+			$modules->install($module_name);
+		}
+	}
+
 	public static function getModuleInfo() {
 		return array(
 			'title' => 'Dplus Qnotes',
@@ -8,6 +64,15 @@ class Qnotes extends WireData implements Module {
 			'summary' => 'Dplus Qnotes',
 			'singular' => true,
 			'autoload' => true,
+			'installs' => array(
+				'QnotesSalesOrder',
+				'QnotesSalesHistory',
+				'QnotesQuote',
+				'QnotesItem',
+				'QnotesPredefined',
+				'Qponotes',
+				'QnotesPo'
+			)
 		);
 	}
 }

@@ -1,6 +1,6 @@
 <?php namespace ProcessWire;
 
-include_once(__DIR__.'../CodeTablesResponse.php');
+include_once(__DIR__.'/../CodeTablesResponse.php');
 
 use Purl\Url;
 
@@ -27,6 +27,16 @@ class CodeTablesMfcm extends WireData implements Module {
 	public function get_codes() {
 		$q = $this->get_query();
 		return $q->find();
+	}
+
+	/**
+	 * Return the IDs for the Motor Freight Codes
+	 * @return array
+	 */
+	public function get_codes_ids() {
+		$q = $this->get_query();
+		$q->select(MotorFreightCode::get_aliasproperty('id'));
+		return $q->find()->toArray();
 	}
 
 	/**
@@ -68,8 +78,14 @@ class CodeTablesMfcm extends WireData implements Module {
 			$record->delete();
 		} else {
 			$description = $input->$rm->text('description');
-			$class = $input->$rm->text('class');
+			$description2 = $input->$rm->text('description2');
+			$description3 = $input->$rm->text('description3');
+			$description4 = $input->$rm->text('description4');
+			$class = $input->$rm->text('motorclass');
 			$record->setDescription($description);
+			$record->setDescription2($description2);
+			$record->setDescription3($description3);
+			$record->setDescription4($description4);
 			$record->setClass($class);
 			$record->setDate(date('Ymd'));
 			$record->setTime(date('His'));

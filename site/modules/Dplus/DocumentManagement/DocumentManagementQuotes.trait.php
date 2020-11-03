@@ -24,20 +24,7 @@ trait DocumentManagementQuotes {
 		});
 	}
 
-	/**
-	 * Return URL to the Quote Documents Page
-	 * @param  string $qnbr     Quote Number
-	 * @param  string $folder   Folder Tag
-	 * @param  string $document File Name
-	 * @return string
-	 */
-	public function get_quote_docsURL($qnbr, $folder, $document) {
-		$url = new Url($this->wire('pages')->get('pw_template=quote-documents')->url);
-		$url->query->set('qnbr', $qnbr);
-		$url->query->set('folder', $folder);
-		$url->query->set('document', $document);
-		return $url->getUrl();
-	}
+
 
 	/**
 	 * Return Documents

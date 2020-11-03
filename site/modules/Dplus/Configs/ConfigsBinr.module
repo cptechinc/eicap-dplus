@@ -1,12 +1,14 @@
 <?php namespace ProcessWire;
 
+use ConfigSalesOrderQuery, ConfigSalesOrder;
+
+include_once(__DIR__.'/Configs.trait.php');
+
 /**
  * Module for configuring the BINR process
  */
 class ConfigsBinr extends Process implements ConfigurableModule {
-/* =============================================================
-		ProcessWire Module Functions
-=============================================================== */
+	use ConfigTraits;
 
 	const CONFIG_FIELDS = array(
 		'default_qtyonhand' => array(
@@ -14,24 +16,35 @@ class ConfigsBinr extends Process implements ConfigurableModule {
 			'label'       => 'Use Qty on hand as default qty?',
 			'description' => 'Defaults Qty to the Qty On Hand',
 			'notes'       => "Defaults Qty to the Qty On Hand"
-		)
+		),
+		'use_qtyonly' => array(
+			'type'        => 'checkbox',  // TRUE OR FALSE
+			'label'       => 'Force Qty to be Qty?',
+			'description' => 'Forces Qty to be Qty, makes input readonly',
+			'notes'       => "Forces Qty to be Qty, makes input readonly"
+		),
 	);
 
 	const DEFAULT_CONFIG = array(
-		'default_qtyonhand' => false
+		'default_qtyonhand' => false,
+		'use_qtyonly' => false,
 	);
 
+	/**
+	 * Return the Number of Decimal Places to use when showing Quantities
+	 * @return int
+	 */
+	public function decimal_places() {
+		return ConfigSalesOrderQuery::create()->findOne()->decimal_places;
+	}
 
+/* =============================================================
+		ProcessWire Module Functions
+=============================================================== */
 	public function init() {
 		parent::init();
 
-		foreach(self::DEFAULT_CONFIG as $key => $value) {
-			if (isset($this->data[$key])) {
-				$this->data[$key] = $this->data[$key];
-			} else {
-				$this->data[$key] = $value;
-			}
-		}
+		$this->init_configdata();
 	}
 
 	/**
@@ -59,6 +72,15 @@ class ConfigsBinr extends Process implements ConfigurableModule {
 		$f = $modules->get('InputfieldCheckbox');
 		$f->attr('name', 'default_qtyonhand');
 		$f->attr('checked', $data['default_qtyonhand'] ? 'checked' : '' );
+		$f->label = __($traits['label']);
+		$f->description = __($traits['description']);
+		$f->notes = _($traits['notes']);
+		$fields->add($f);
+
+		$traits = self::CONFIG_FIELDS['use_qtyonly'];
+		$f = $modules->get('InputfieldCheckbox');
+		$f->attr('name', 'use_qtyonly');
+		$f->attr('checked', $data['use_qtyonly'] ? 'checked' : '' );
 		$f->label = __($traits['label']);
 		$f->description = __($traits['description']);
 		$f->notes = _($traits['notes']);

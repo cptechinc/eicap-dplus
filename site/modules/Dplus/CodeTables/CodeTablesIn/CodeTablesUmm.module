@@ -1,6 +1,6 @@
 <?php namespace ProcessWire;
 
-include_once(__DIR__.'../CodeTablesResponse.php');
+include_once(__DIR__.'/../CodeTablesResponse.php');
 
 use Purl\Url;
 
@@ -40,6 +40,16 @@ class CodeTablesUmm extends WireData implements Module {
 	public function get_code($stock) {
 		$q = $this->get_query();
 		return $q->findOneById($stock);
+	}
+
+	/**
+	 * Return the IDs for the Customer Price Code
+	 * @return array
+	 */
+	public function get_codes_ids() {
+		$q = $this->get_query();
+		$q->select(UnitofMeasureSale::get_aliasproperty('id'));
+		return $q->find()->toArray();
 	}
 
 	/**
@@ -160,8 +170,11 @@ class CodeTablesUmm extends WireData implements Module {
 
 		if ($q->count()) {
 			$uom_purchase = $q->findOne();
+			$uom_purchase->setCode($uom_sale->code);
+			$uom_purchase->fromArray($uom_sale->toArray());
 		} else {
 			$uom_purchase = new UnitofMeasurePurchase();
+			$uom_purchase->setCode($uom_sale->code);
 			$uom_purchase->fromArray($uom_sale->toArray());
 		}
 

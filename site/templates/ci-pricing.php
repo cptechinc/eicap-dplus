@@ -22,8 +22,13 @@
 
 				$refreshurl = $page->get_customerpricingURL($custID, $itemID);
 				$page->body .= $config->twig->render('customers/ci/ci-links.twig', ['page' => $page, 'custID' => $custID, 'lastmodified' => $module_json->file_modified(session_id(), $page->jsoncode), 'refreshurl' => $refreshurl]);
-				$page->body .= $config->twig->render('items/ii/pricing/customer-item.twig', ['page' => $page, 'customer' => $customer, 'json' => $json]);
-				$page->body .= $config->twig->render('items/ii/pricing/screen.twig', ['page' => $page, 'itemID' => $itemID, 'json' => $json]);
+
+				if ($json['error']) {
+					$page->body .= $config->twig->render('util/alert.twig', ['type' => 'danger', 'title' => 'Error!', 'iconclass' => 'fa fa-warning fa-2x', 'message' => $json['errormsg']]);
+				} else {
+					$page->body .= $config->twig->render('items/ii/pricing/customer-item.twig', ['page' => $page, 'customer' => $customer, 'json' => $json]);
+					$page->body .= $config->twig->render('items/ii/pricing/screen.twig', ['page' => $page, 'itemID' => $itemID, 'json' => $json]);
+				}
 			} else {
 				if ($session->pricingtry > 3) {
 					$page->headline = $page->title = "Pricing File could not be loaded";
@@ -35,19 +40,11 @@
 			}
 		} else {
 			$q = $input->get->q ? $input->get->text('q') : '';
-			$query = ItemsearchQuery::create();
-			$query->filterActive();
-			$query->filterByOrigintype([Itemsearch::ORIGINTYPE_VENDOR, Itemsearch::ORIGINTYPE_ITEM]);
 
-			if ($query->filterByItemid($q)->count()) {
-				$query->groupby('itemid');
-			} else {
-				$query->clear();
-				$query->filterActive();
-				$query->filterByOrigintype([Itemsearch::ORIGINTYPE_VENDOR, Itemsearch::ORIGINTYPE_ITEM]);
-				$query->where("MATCH(Itemsearch.itemid, Itemsearch.refitemid, Itemsearch.desc1, Itemsearch.desc2) AGAINST (? IN BOOLEAN MODE)", "*$q*");
-				$query->groupby('itemid');
-			}
+			$filter_itm = $modules->get('FilterItemMaster');
+			$filter_itm->init_query($user);
+			$filter_itm->filter_search($q);
+			$query = $filter_itm->get_query();
 
 			if ($query->count() == 1) {
 				$item = $query->findOne();
