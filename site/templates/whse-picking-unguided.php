@@ -12,6 +12,10 @@
 	$pickingsession->set_ordn($ordn);
 
 	$whsesession = WhsesessionQuery::create()->findOneBySessionid(session_id());
+	// if ($whsesession->is_pickingunguided() === false) {
+	// 	$whsesession->setFunction(Whsesession::PICKING_UNGUIDED);
+	// 	$whsesession->save();
+	// }
 	$warehouse   = WarehouseQuery::create()->findOneByWhseid($whsesession->whseid);
 
 	// CHECK If there are details to pick

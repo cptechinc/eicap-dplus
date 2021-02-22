@@ -108,3 +108,4 @@
 	if ($session->printpicklabels) {
 		$page->js .= $config->twig->render('util/sweetalert.twig', ['type' => 'success', 'title' => 'Success', 'msg' => 'Your labels have printed', 'icon' => 'fa fa-print fa-2x']);
 	}
+	
