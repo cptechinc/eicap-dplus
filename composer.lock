@@ -12,14 +12,18 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/cptechinc/dplus-model.git",
-                "reference": "d94673af9cba00e9a3bab67dd2137df83b87b186"
+                "reference": "df76aa06bf5b7f9635a40ba2ada53f4d5dde92bd"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/cptechinc/dplus-model/zipball/d94673af9cba00e9a3bab67dd2137df83b87b186",
-                "reference": "d94673af9cba00e9a3bab67dd2137df83b87b186",
+                "url": "https://api.github.com/repos/cptechinc/dplus-model/zipball/df76aa06bf5b7f9635a40ba2ada53f4d5dde92bd",
+                "reference": "df76aa06bf5b7f9635a40ba2ada53f4d5dde92bd",
                 "shasum": ""
             },
+            "require": {
+                "propel/propel": "~2.0@dev"
+            },
+            "default-branch": true,
             "type": "library",
             "autoload": {
                 "classmap": [
@@ -29,17 +33,17 @@
                 ]
             },
             "notification-url": "https://packagist.org/downloads/",
-            "description": "Classes for Dplus Database Tables",
+            "description": "Propel 2.0 built ORM classes for Dplus data(x) databases based",
             "homepage": "http://github.com/cptechinc/dplus-model",
             "keywords": [
-                "cart",
-                "cartquote",
-                "detail",
-                "dplus-model",
-                "qnote",
-                "quote"
+                "data",
+                "dplus-model"
             ],
-            "time": "2020-10-09T19:13:35+00:00"
+            "support": {
+                "issues": "https://github.com/cptechinc/dplus-model/issues",
+                "source": "https://github.com/cptechinc/dplus-model/tree/master"
+            },
+            "time": "2021-06-28T21:11:15+00:00"
         },
         {
             "name": "cptechinc/dpluso-model",
@@ -47,14 +51,15 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/cptechinc/dpluso-model.git",
-                "reference": "815a8eb47a9d9f9b33dd285a4904a8f7b611dbce"
+                "reference": "b13a3bf963a59447cde88aa8472aaf8f951fe72d"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/cptechinc/dpluso-model/zipball/815a8eb47a9d9f9b33dd285a4904a8f7b611dbce",
-                "reference": "815a8eb47a9d9f9b33dd285a4904a8f7b611dbce",
+                "url": "https://api.github.com/repos/cptechinc/dpluso-model/zipball/b13a3bf963a59447cde88aa8472aaf8f951fe72d",
+                "reference": "b13a3bf963a59447cde88aa8472aaf8f951fe72d",
                 "shasum": ""
             },
+            "default-branch": true,
             "type": "library",
             "autoload": {
                 "classmap": [
@@ -74,7 +79,11 @@
                 "qnote",
                 "quote"
             ],
-            "time": "2020-10-20T18:33:27+00:00"
+            "support": {
+                "issues": "https://github.com/cptechinc/dpluso-model/issues",
+                "source": "https://github.com/cptechinc/dpluso-model/tree/master"
+            },
+            "time": "2021-05-26T13:11:20+00:00"
         },
         {
             "name": "jwage/purl",
@@ -1958,5 +1967,6 @@
         "php": ">=7.0.0",
         "ext-gd": "*"
     },
-    "platform-dev": []
+    "platform-dev": [],
+    "plugin-api-version": "2.0.0"
 }
