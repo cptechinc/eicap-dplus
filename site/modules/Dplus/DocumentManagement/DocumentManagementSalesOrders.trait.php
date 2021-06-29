@@ -1,7 +1,7 @@
 <?php namespace ProcessWire;
 
 use Purl\Url;
-use DocumentFoldersQuery, DocumentFolders;
+use DocumentFolderQuery, DocumentFolder;
 use DocumentQuery, Documents;
 use SalesHistoryQuery, SalesHistory;
 use SalesHistoryDetailQuery, SalesHistoryDetail;

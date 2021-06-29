@@ -1,7 +1,7 @@
 <?php namespace ProcessWire;
 
 use Purl\Url;
-use DocumentFoldersQuery, DocumentFolders;
+use DocumentFolderQuery, DocumentFolder;
 use DocumentQuery, Document;
 use PurchaseOrderQuery, PurchaseOrder;
 use ApInvoiceQuery, ApInvoice;

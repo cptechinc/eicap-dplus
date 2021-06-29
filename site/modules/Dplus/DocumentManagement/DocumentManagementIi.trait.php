@@ -3,7 +3,7 @@
 use Propel\Runtime\ActiveQuery\Criteria;
 use Purl\Url;
 
-use DocumentFoldersQuery, DocumentFolders;
+use DocumentFolderQuery, DocumentFolder;
 use DocumentQuery, Document;
 use SalesHistoryQuery, SalesHistory;
 use SalesOrderQuery, SalesOrder;
