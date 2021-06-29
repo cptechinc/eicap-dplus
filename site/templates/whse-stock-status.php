@@ -16,9 +16,13 @@
 		if ($json['error']) {
 			$page->body .= $config->twig->render('util/alert.twig', ['type' => 'danger', 'title' => 'Error!', 'iconclass' => 'fa fa-warning fa-2x', 'message' => $json['errormsg']]);
 		} else {
+			if (empty($json)) {
+				$page->body .= $config->twig->render('util/alert.twig', ['type' => 'danger', 'title' => 'Error!', 'iconclass' => 'fa fa-warning fa-2x', 'message' => 'Stock File Error']);
+			} else {
+				$xls->write($json);
+				$page->body .= $config->twig->render('util/jdf/table.twig', ['page' => $page, 'json' => $json, 'jsondatafiles' => $m_json]);
+			}
 
-			$xls->write($json);
-			$page->body .= $config->twig->render('util/jdf/table.twig', ['page' => $page, 'json' => $json, 'jsondatafiles' => $m_json]);
 		}
 	} else {
 		if ($session->stockstatus > 3) {
