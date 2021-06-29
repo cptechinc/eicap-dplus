@@ -13,7 +13,7 @@
 </div>
 <h3 class="my-4 font-weight-bold text-secondary">Scanned: {{ item.scan }}</h3>
 <div class="row">
-	<form action="{{ page.formurl }}" method="post" class="col-sm-6 form-reset" id="physical-count-form">
+	<form action="{{ page.formurl }}" method="post" class="col-sm-6 form-reset" tab-inputs="true" id="physical-count-form">
 		<input type="hidden" name="action" value="physical-count-submit">
 		<input type="hidden" name="scan" value="{{ item.scan }}">
 		<input type="hidden" name="page" value="{{ page.fullURL.getUrl() }}">
@@ -66,12 +66,10 @@
 				<input type="text" class="form-control text-right qty-input" id="qty" name="qty" value="{{ item.qty }}">
 			</div>
 		</div>
-
-		<div class="form-group mb-5">
+		<div class="form-group mb-5 collapse {{ page.wire('config').company != 'eicap' ? 'show' : '' }}">
 			<label for="productiondate">Production Date</label>
 			{% include 'util/date-picker.twig' with {'name': 'productiondate', 'id': 'productiondate', 'value': item.productiondate ? item.productiondate|convertdate('m/d/Y') : "now"|date("m/d/Y") } %}
 		</div>
-
 		<div class="d-flex w-100 justify-content-between">
 			<button type="submit" class="btn btn-success btn-lg">
 				<i class="fa fa-floppy-o" aria-hidden="true"></i> Submit
