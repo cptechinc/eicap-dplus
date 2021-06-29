@@ -38,7 +38,7 @@
 				$page->body .= $config->twig->render('warehouse/inventory/physical-count/item-search-form.twig', ['page' => $page]);
 			} else {
 				if ($session->bin && $config->inventory->physicalcount_savebin) {
-					$physicalitem->setBin($session->bin);
+					// $physicalitem->setBin($session->bin);
 				}
 				$page->body = $config->twig->render('warehouse/inventory/physical-count/physical-count-form.twig', ['page' => $page, 'item' => $physicalitem]);
 				$page->body .= $config->twig->render('warehouse/inventory/bins-modal.twig', ['warehouse' => $warehouse]);
