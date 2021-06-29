@@ -3,7 +3,7 @@
 use Purl\Url;
 
 use DocumentFoldersQuery, DocumentFolders;
-use DocumentsQuery, Documents;
+use DocumentQuery, Document;
 
 /**
  * Document Management VI

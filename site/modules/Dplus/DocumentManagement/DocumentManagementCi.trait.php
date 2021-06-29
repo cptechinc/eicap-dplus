@@ -3,7 +3,7 @@
 use Purl\Url;
 
 use DocumentFoldersQuery, DocumentFolders;
-use DocumentsQuery, Documents;
+use DocumentQuery , Document;
 use SalesOrderQuery, SalesOrder;
 use SalesHistoryQuery, SalesHistory;
 
