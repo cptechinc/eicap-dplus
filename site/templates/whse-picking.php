@@ -62,7 +62,7 @@
 			include __DIR__ . "/$template.php";
 		}
 	} else {
-		$modules->get('DplusRequest')->self_request($page->parent->child('template=redir')->url."?action=$action&sessionID=".session_id());
+		//$modules->get('DplusRequest')->self_request($page->parent->child('template=redir')->url."?action=$action&sessionID=".session_id());
 		$page->formurl = $page->parent->child('template=redir')->url;
 		$page->body = $config->twig->render('warehouse/picking/sales-order-form.twig', ['page' => $page]);
 	}
